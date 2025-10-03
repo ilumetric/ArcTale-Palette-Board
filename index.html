@@ -144,7 +144,7 @@ const exportBtn = document.getElementById('exportBtn');
 const importBtn = document.getElementById('importBtn');
 
 let current = (JSON.parse(localStorage.getItem('palette-v43-meta')||'{}').current) || 'base';
-let data = load() || defaults();
+let data;
 let swapMode=false, firstSel=null, editingRef=null; // {line, idx}
 
 function defaults(){
@@ -159,6 +159,41 @@ function defaults(){
 function save(){ localStorage.setItem('palette-v43-data', JSON.stringify(data)); }
 function load(){ try{ return JSON.parse(localStorage.getItem('palette-v43-data')||'null'); }catch(e){ return null; } }
 function saveMeta(){ localStorage.setItem('palette-v43-meta', JSON.stringify({current})); }
+
+// init: попытаться загрузить сохранённые данные, иначе подтянуть из palette-board.json, иначе дефолты
+async function init(){
+  // пробуем localStorage
+  data = load();
+  if(!data){
+    const ok = await tryFetchInitialJson();
+    if(!ok){ data = defaults(); }
+  }
+  render();
+}
+
+// попытка загрузить palette-board.json, лежащий рядом с index.html
+async function tryFetchInitialJson(){
+  try{
+    const res = await fetch('palette-board.json');
+    if(!res.ok) return false;
+    const text = await res.text();
+    const j = JSON.parse(text);
+    if(Array.isArray(j)){
+      data = defaults();
+      data[current][0] = j.map(v => normalizeHex(v));
+    }else if(j && j.data){
+      data = j.data; current = j.current || current;
+    }else if(j && j.extra && j.base && j.accent && j.neon){
+      data = j;
+    }else{
+      return false;
+    }
+    save(); saveMeta();
+    return true;
+  }catch(_){
+    return false;
+  }
+}
 
 /* ----- Utils ----- */
 function normalizeHex(hex){
@@ -305,7 +340,7 @@ colorPicker.addEventListener('input', ()=> hexInput.value = colorPicker.value.to
 hexInput.addEventListener('input', ()=>{ const n = normalizeHex(hexInput.value); if(n){ colorPicker.value = n; } });
 
 // init
-render();
+init();
 </script>
 </body>
 </html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ArcTale: Palette Board v4.4</title>
+<!-- favicon: локальная иконка pantone.png -->
+<link rel="icon" type="image/png" href="pantone.png">
+<style>
+:root{
+  --bg:#0c0d10;
+  --panel:#111318;
+  --panel-2:#0f1217;
+  --stroke:rgba(255,255,255,.10);
+  --muted:#9aa3b2;
+  --text:#f3f6fc;
+  --ring:#0a84ff;
+  --radius:5px;
+  --cell-radius:4px;
+  --gap:12px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0; color:var(--text); background:var(--bg);
+     font:500 16px ui-sans-serif, -apple-system, "SF Pro Text", Segoe UI, Roboto, Inter, Arial}
+.shell{max-width:1100px;margin:24px auto 40px;padding:0 18px}
+.card{border-radius:var(--radius); background:var(--panel); border:1px solid var(--stroke)}
+.topbar{display:flex; gap:12px; align-items:center; justify-content:space-between;
+        padding:12px 12px; border-bottom:1px solid var(--stroke)}
+.brand{display:flex; gap:10px; align-items:center}
+.brand strong{font-weight:800; letter-spacing:.3px; font-size:17px}
+.controls{display:flex; gap:8px; align-items:center}
+
+.segment{display:inline-flex; border:1px solid var(--stroke); border-radius:999px; padding:2px; gap:2px; background:var(--panel-2)}
+.segment button{appearance:none; border:none; background:transparent; color:var(--text);
+  padding:8px 12px; border-radius:999px; cursor:pointer; font-weight:700}
+.segment button.active{background:#171a21}
+
+.iconbtn{
+  appearance:none; border:1px solid var(--stroke); background:#171a21; color:var(--text);
+  width:38px; height:38px; border-radius:9px; display:grid; place-items:center; font-size:18px; cursor:pointer;
+}
+.iconbtn.on{outline:2px solid var(--ring); outline-offset:2px}
+
+/* Lines */
+.section{padding:12px}
+.line{display:flex; align-items:stretch; gap:10px; margin-bottom:14px}
+.line-title{width:60px; display:flex; align-items:center; justify-content:center; font:700 12px ui-monospace,Menlo,Consolas; color:var(--muted)}
+.line-grid{display:grid; grid-template-columns: repeat(10, minmax(0,1fr)); gap:10px; flex:1}
+
+/* Cells */
+.cell{position:relative; height:180px; border-radius:var(--cell-radius); overflow:hidden;
+      background:#0f141b; border:1px solid var(--stroke); cursor:pointer}
+.swatch{position:absolute; inset:0; border-radius:inherit}
+.footer{position:absolute; inset:auto 0 0 0; padding:8px; display:flex; justify-content:flex-start; gap:8px; background:rgba(0,0,0,.35)}
+.hex{font:700 12px ui-monospace,Menlo,Consolas; padding:5px 7px; border-radius:7px; letter-spacing:.6px;
+     color:#fff; background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.18)}
+.cell.selected{outline:2px solid var(--ring); outline-offset:1px}
+.cell::after{content:"Скопировано"; position:absolute; top:8px; right:8px; font-size:10px; background:rgba(0,0,0,.45); padding:3px 6px; border-radius:999px; border:1px solid rgba(255,255,255,.14); opacity:0; transform:translateY(-6px); transition:.2s}
+.cell.badge::after{opacity:1; transform:none}
+
+/* Add-cell */
+.add-cell{
+  display:grid; place-items:center; height:180px; border-radius:var(--cell-radius);
+  border:1px dashed rgba(255,255,255,.22); background:#0f141b; color:#9aa3b2;
+  font-weight:800; letter-spacing:.4px; cursor:pointer;
+}
+.add-cell span{display:flex; flex-direction:column; align-items:center; gap:6px; font-size:12px}
+.add-cell b{font-size:22px; line-height:1}
+
+/* Dark dialog */
+dialog{
+  border:none; border-radius:10px; padding:0; width:min(520px, 92vw);
+  background:var(--panel); color:var(--text); border:1px solid var(--stroke);
+}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.modal-head{padding:12px; border-bottom:1px solid var(--stroke); display:flex; justify-content:space-between; align-items:center}
+.modal-body{padding:12px; display:grid; gap:10px}
+.modal-row{display:flex; gap:10px; align-items:center}
+.modal-actions{padding:12px; display:flex; gap:8px; justify-content:flex-end}
+.input-dark{
+  width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--stroke);
+  background:#171a21; color:var(--text); font-weight:700; letter-spacing:.6px;
+}
+.toast{position:fixed; inset:auto 0 18px 0; margin:auto; width:max-content; background:#111; color:#fff; padding:8px 14px; border-radius:9px; border:1px solid rgba(255,255,255,.18); transform:translateY(12px); opacity:0; transition:.2s; pointer-events:none; font-weight:700}
+.toast.show{transform:none; opacity:1}
+</style>
+</head>
+<body>
+  <div class="shell">
+    <div class="card">
+      <div class="topbar">
+        <div class="brand">
+          <strong>ArcTale: Palette Board</strong>
+        </div>
+        <div class="controls">
+          <div id="seg" class="segment" role="tablist" aria-label="Разделы палитры">
+            <button data-sec="base" class="active" role="tab">основные</button>
+            <button data-sec="extra" role="tab">дополнительные</button>
+            <button data-sec="accent" role="tab">акценты</button>
+            <button data-sec="neon" role="tab">свет/неон</button>
+          </div>
+          <button class="iconbtn" id="swapBtn"   title="Свап ⇄">⇄</button>
+          <button class="iconbtn" id="exportBtn" title="Экспорт ⤒">⤒</button>
+          <button class="iconbtn" id="importBtn" title="Импорт ⤓">⤓</button>
+        </div>
+      </div>
+      <div id="section" class="section"></div>
+    </div>
+  </div>
+
+  <!-- Editor -->
+  <dialog id="editor">
+    <div class="modal-head">
+      <strong>Редактировать цвет</strong>
+      <button data-close class="iconbtn" style="width:34px;height:34px;font-size:14px">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-row">
+        <input id="colorPicker" type="color" class="input-dark" style="flex:0 0 46px; height:46px; padding:0">
+        <input id="hexInput" class="input-dark" placeholder="#RRGGBB" value="#5aa364" style="flex:1">
+      </div>
+      <div class="hint">Пример: <code>#1A2B3C</code></div>
+    </div>
+    <div class="modal-actions">
+      <button id="deleteBtn" class="iconbtn" title="Удалить">⌫</button>
+      <button data-close class="iconbtn" title="Отмена">↩︎</button>
+      <button id="saveBtn" class="iconbtn" title="Сохранить">✔︎</button>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status">Готово</div>
+
+<script>
+/* ----- State & storage ----- */
+const sectionEl = document.getElementById('section');
+const seg = document.getElementById('seg');
+const toastEl = document.getElementById('toast');
+const editor = document.getElementById('editor');
+const colorPicker = document.getElementById('colorPicker');
+const hexInput = document.getElementById('hexInput');
+const swapBtn = document.getElementById('swapBtn');
+const exportBtn = document.getElementById('exportBtn');
+const importBtn = document.getElementById('importBtn');
+
+let current = (JSON.parse(localStorage.getItem('palette-v43-meta')||'{}').current) || 'base';
+let data = load() || defaults();
+let swapMode=false, firstSel=null, editingRef=null; // {line, idx}
+
+function defaults(){
+  const mk = (arr)=> [arr.slice(0,4), [], [], [], []];
+  return {
+    extra:  mk(['#6b5844','#b79558','#c0ab4a','#c38756']),
+    base:   mk(['#1e2026','#2a2f3a','#394458','#4b566e']),
+    accent: mk(['#c86b45','#7dbb44','#3aa6d7','#c16bd8']),
+    neon:   mk(['#00ffa3','#8aff00','#ffd000','#66ccff']),
+  };
+}
+function save(){ localStorage.setItem('palette-v43-data', JSON.stringify(data)); }
+function load(){ try{ return JSON.parse(localStorage.getItem('palette-v43-data')||'null'); }catch(e){ return null; } }
+function saveMeta(){ localStorage.setItem('palette-v43-meta', JSON.stringify({current})); }
+
+/* ----- Utils ----- */
+function normalizeHex(hex){
+  if(!hex) return null;
+  hex = String(hex).trim().replace(/^#/,'').toUpperCase();
+  if(/^[0-9A-F]{3}$/.test(hex)) hex = hex.split('').map(c=>c+c).join('');
+  if(!/^[0-9A-F]{6}$/.test(hex)) return null;
+  return '#'+hex;
+}
+async function copyText(t){ try{ await navigator.clipboard.writeText(t); showToast('Скопировано: '+t); }catch(_){ showToast('Не удалось скопировать'); } }
+let toastTimer; function showToast(m){ toastEl.textContent=m; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>toastEl.classList.remove('show'),1200); }
+
+/* ----- Render ----- */
+function renderSeg(){ seg.querySelectorAll('button').forEach(b=> b.classList.toggle('active', b.dataset.sec===current)); }
+function render(){
+  renderSeg();
+  const lines = data[current];
+  sectionEl.innerHTML='';
+  lines.forEach((cells, lineIndex)=>{
+    const row = document.createElement('div'); row.className='line';
+
+    const title = document.createElement('div'); title.className='line-title'; title.textContent=String(lineIndex+1).padStart(2,'0');
+    row.appendChild(title);
+
+    const grid = document.createElement('div'); grid.className='line-grid';
+
+    const addCellNode = createAddCell(lineIndex);
+
+    if(cells.length===0){ grid.appendChild(addCellNode); }
+    cells.forEach((hex, idx)=>{
+      const c = createCell(hex, lineIndex, idx);
+      grid.appendChild(c);
+    });
+    if(cells.length>0 && cells.length<10){ grid.appendChild(addCellNode); }
+
+    row.appendChild(grid);
+    sectionEl.appendChild(row);
+  });
+}
+function createCell(hex, lineIndex, idx){
+  const cell = document.createElement('div');
+  cell.className='cell';
+  if(swapMode && firstSel && firstSel.line===lineIndex && firstSel.idx===idx) cell.classList.add('selected');
+
+  const sw = document.createElement('div'); sw.className='swatch'; if(hex) sw.style.background=hex; cell.appendChild(sw);
+
+  const footer = document.createElement('div'); footer.className='footer';
+  const label = document.createElement('span'); label.className='hex'; label.textContent=hex || '(пусто)'; footer.appendChild(label);
+  cell.appendChild(footer);
+
+  cell.addEventListener('click', ()=>{
+    if(hex){ copyText(hex); cell.classList.add('badge'); setTimeout(()=> cell.classList.remove('badge'), 800); }
+    if(swapMode){ handleSwap(lineIndex, idx); }
+  });
+  cell.addEventListener('dblclick', ()=> openEditor(lineIndex, idx));
+  return cell;
+}
+function createAddCell(lineIndex){
+  const ac = document.createElement('div');
+  ac.className='add-cell';
+  ac.innerHTML = '<span><b>＋</b>добавить</span>';
+  ac.title = 'Добавить цвет в эту линию';
+  ac.addEventListener('click', ()=>{
+    if(data[current][lineIndex].length>=10){ showToast('Макс. 10 ячеек'); return; }
+    const newIdx = data[current][lineIndex].push(null) - 1;
+    save();
+    render();
+    openEditor(lineIndex, newIdx);
+  });
+  return ac;
+}
+
+/* ----- Actions ----- */
+function openEditor(line, idx){
+  editingRef = {line, idx};
+  const cur = normalizeHex(data[current][line][idx]) || '#5aa364';
+  colorPicker.value = cur; hexInput.value = cur; editor.showModal();
+}
+function removeColor(line, idx){
+  data[current][line].splice(idx,1); save(); render();
+}
+function handleSwap(line, idx){
+  if(!swapMode){ return; }
+  if(!firstSel){ firstSel = {line, idx}; render(); return; }
+  if(firstSel.line===line && firstSel.idx===idx){ firstSel=null; render(); return; }
+  const a=firstSel, b={line, idx};
+  const va = data[current][a.line][a.idx]; const vb = data[current][b.line][b.idx];
+  data[current][a.line][a.idx] = vb; data[current][b.line][b.idx] = va;
+  firstSel=null; save(); showToast('Поменяли местами'); render();
+}
+
+/* ----- Toolbar & editor wiring ----- */
+seg.addEventListener('click', (e)=>{
+  const btn = e.target.closest('button[data-sec]'); if(!btn) return;
+  current = btn.dataset.sec; saveMeta(); firstSel=null; render();
+});
+swapBtn.addEventListener('click', ()=>{
+  swapMode = !swapMode; firstSel=null;
+  swapBtn.classList.toggle('on', swapMode);
+  showToast(swapMode ? 'Свап: выберите 2 ячейки' : 'Свап выключен');
+});
+
+exportBtn.addEventListener('click', ()=>{
+  try{
+    const payload = JSON.stringify({current, data});
+    const blob = new Blob([payload], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement('a'), {href:url, download:'palette-board-v43.json'});
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    showToast('Экспортировано');
+  }catch(_){ showToast('Ошибка экспорта'); }
+});
+importBtn.addEventListener('click', ()=>{
+  const input = document.createElement('input'); input.type='file'; input.accept='application/json';
+  input.onchange = async ()=>{
+    const file = input.files[0]; if(!file) return;
+    try{
+      const text = await file.text(); const j = JSON.parse(text);
+      if(Array.isArray(j)){
+        data[current][0] = j.map(v => normalizeHex(v));
+      }else if(j && j.data){
+        data = j.data; current = j.current || current;
+      }else if(j && j.extra && j.base && j.accent && j.neon){
+        data = j;
+      }else{
+        throw new Error('bad');
+      }
+      save(); saveMeta(); render(); showToast('Импортировано');
+    }catch(_){ showToast('Некорректный JSON'); }
+  };
+  input.click();
+});
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  const n = normalizeHex(hexInput.value);
+  if(!n){ showToast('Неверный HEX'); return; }
+  const {line, idx} = editingRef;
+  data[current][line][idx] = n; save(); render(); editor.close();
+});
+document.getElementById('deleteBtn').addEventListener('click', ()=>{
+  const {line, idx} = editingRef; removeColor(line, idx); editor.close();
+});
+document.querySelectorAll('[data-close]').forEach(b=> b.addEventListener('click', ()=> editor.close()));
+colorPicker.addEventListener('input', ()=> hexInput.value = colorPicker.value.toUpperCase());
+hexInput.addEventListener('input', ()=>{ const n = normalizeHex(hexInput.value); if(n){ colorPicker.value = n; } });
+
+// init
+render();
+</script>
+</body>
+</html>

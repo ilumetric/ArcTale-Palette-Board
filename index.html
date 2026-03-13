@@ -1,123 +1,774 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ArcTale: Palette Board v4.4</title>
-<!-- favicon: локальная иконка pantone.png -->
-<link rel="icon" type="image/png" href="pantone.png">
-<style>
-:root{
-  --bg:#0c0d10;
-  --panel:#111318;
-  --panel-2:#0f1217;
-  --stroke:rgba(255,255,255,.10);
-  --muted:#9aa3b2;
-  --text:#f3f6fc;
-  --ring:#0a84ff;
-  --radius:5px;
-  --cell-radius:4px;
-  --gap:12px;
-}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0; color:var(--text); background:var(--bg);
-     font:500 16px ui-sans-serif, -apple-system, "SF Pro Text", Segoe UI, Roboto, Inter, Arial}
-.shell{max-width:1100px;margin:24px auto 40px;padding:0 18px}
-.card{border-radius:var(--radius); background:var(--panel); border:1px solid var(--stroke)}
-.topbar{display:flex; gap:12px; align-items:center; justify-content:space-between;
-        padding:12px 12px; border-bottom:1px solid var(--stroke)}
-.brand{display:flex; gap:10px; align-items:center}
-.brand strong{font-weight:800; letter-spacing:.3px; font-size:17px}
-.controls{display:flex; gap:8px; align-items:center}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ArcTale: Palette Board</title>
+  <link rel="icon" type="image/png" href="pantone.png">
+  <style>
+    :root {
+      --sidebar-w: 260px;
+      --top-header-h: 128px;
+      --bg: #1a1a1f;
+      --sidebar-bg: #141419;
+      --panel: #1e1e24;
+      --panel-2: #16161c;
+      --stroke: rgba(255, 255, 255, .08);
+      --stroke-2: rgba(255, 255, 255, .05);
+      --muted: #787c8a;
+      --muted-2: #5c5f6b;
+      --text: #e8e8ed;
+      --text-dim: #b0b3be;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --ring: #6366f1;
+      --radius: 8px;
+      --cell-radius: 6px;
+      --gap: 12px;
+    }
 
-.segment{display:inline-flex; border:1px solid var(--stroke); border-radius:999px; padding:2px; gap:2px; background:var(--panel-2)}
-.segment button{appearance:none; border:none; background:transparent; color:var(--text);
-  padding:8px 12px; border-radius:999px; cursor:pointer; font-weight:700}
-.segment button.active{background:#171a21}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
 
-.iconbtn{
-  appearance:none; border:1px solid var(--stroke); background:#171a21; color:var(--text);
-  width:38px; height:38px; border-radius:9px; display:grid; place-items:center; font-size:18px; cursor:pointer;
-}
-.iconbtn.on{outline:2px solid var(--ring); outline-offset:2px}
+    html,
+    body {
+      height: 100%
+    }
 
-/* Lines */
-.section{padding:12px}
-.line{display:flex; align-items:stretch; gap:10px; margin-bottom:14px}
-.line-title{width:60px; display:flex; align-items:center; justify-content:center; font:700 12px ui-monospace,Menlo,Consolas; color:var(--muted)}
-.line-grid{display:grid; grid-template-columns: repeat(10, minmax(0,1fr)); gap:10px; flex:1}
+    body {
+      color: var(--text);
+      background: var(--bg);
+      font: 400 14px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      display: flex;
+      overflow: hidden
+    }
 
-/* Cells */
-.cell{position:relative; height:180px; border-radius:var(--cell-radius); overflow:hidden;
-      background:#0f141b; border:1px solid var(--stroke); cursor:pointer}
-.swatch{position:absolute; inset:0; border-radius:inherit}
-.footer{position:absolute; inset:auto 0 0 0; padding:8px; display:flex; justify-content:flex-start; gap:8px; background:rgba(0,0,0,.35)}
-.hex{font:700 12px ui-monospace,Menlo,Consolas; padding:5px 7px; border-radius:7px; letter-spacing:.6px;
-     color:#fff; background:rgba(0,0,0,.45); border:1px solid rgba(255,255,255,.18)}
-.cell.selected{outline:2px solid var(--ring); outline-offset:1px}
-.cell::after{content:"Скопировано"; position:absolute; top:8px; right:8px; font-size:10px; background:rgba(0,0,0,.45); padding:3px 6px; border-radius:999px; border:1px solid rgba(255,255,255,.14); opacity:0; transform:translateY(-6px); transition:.2s}
-.cell.badge::after{opacity:1; transform:none}
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      height: 100vh;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--stroke);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      user-select: none;
+    }
 
-/* Add-cell */
-.add-cell{
-  display:grid; place-items:center; height:180px; border-radius:var(--cell-radius);
-  border:1px dashed rgba(255,255,255,.22); background:#0f141b; color:#9aa3b2;
-  font-weight:800; letter-spacing:.4px; cursor:pointer;
-}
-.add-cell span{display:flex; flex-direction:column; align-items:center; gap:6px; font-size:12px}
-.add-cell b{font-size:22px; line-height:1}
+    .sidebar-brand {
+      min-height: var(--top-header-h);
+      padding: 28px 20px 20px;
+      box-sizing: border-box;
+      border-bottom: 1px solid var(--stroke);
+      display: flex;
+      align-items: center;
+    }
 
-/* Dark dialog */
-dialog{
-  border:none; border-radius:10px; padding:0; width:min(520px, 92vw);
-  background:var(--panel); color:var(--text); border:1px solid var(--stroke);
-}
-dialog::backdrop{background:rgba(0,0,0,.55)}
-.modal-head{padding:12px; border-bottom:1px solid var(--stroke); display:flex; justify-content:space-between; align-items:center}
-.modal-body{padding:12px; display:grid; gap:10px}
-.modal-row{display:flex; gap:10px; align-items:center}
-.modal-actions{padding:12px; display:flex; gap:8px; justify-content:flex-end}
-.input-dark{
-  width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--stroke);
-  background:#171a21; color:var(--text); font-weight:700; letter-spacing:.6px;
-}
-.toast{position:fixed; inset:auto 0 18px 0; margin:auto; width:max-content; background:#111; color:#fff; padding:8px 14px; border-radius:9px; border:1px solid rgba(255,255,255,.18); transform:translateY(12px); opacity:0; transition:.2s; pointer-events:none; font-weight:700}
-.toast.show{transform:none; opacity:1}
-</style>
+    .sidebar-brand span {
+      font-weight: 700;
+      font-size: 26px;
+      letter-spacing: .2px;
+      color: var(--text)
+    }
+
+    .sidebar-section {
+      padding: 12px 0
+    }
+
+    .sidebar-section-title {
+      padding: 4px 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted-2);
+    }
+
+    .sidebar-nav {
+      list-style: none;
+      padding: 4px 8px
+    }
+
+    .sidebar-nav li a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: var(--text-dim);
+      font-size: 14px;
+      font-weight: 500;
+      transition: background .15s, color .15s;
+      cursor: pointer;
+    }
+
+    .sidebar-nav li a:hover {
+      background: rgba(255, 255, 255, .05);
+      color: var(--text)
+    }
+
+    .sidebar-nav li a.active {
+      background: rgba(99, 102, 241, .12);
+      color: var(--accent-hover);
+      font-weight: 600
+    }
+
+    .sidebar-nav li a .nav-label {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 20px;
+      border-top: 1px solid var(--stroke);
+      font-size: 11px;
+      color: var(--muted-2)
+    }
+
+    /* ── Main area ── */
+    .main {
+      flex: 1;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column
+    }
+
+    /* Page header (GitBook style) */
+    .page-header {
+      min-height: var(--top-header-h);
+      padding: 28px 40px 20px;
+      box-sizing: border-box;
+      border-bottom: 1px solid var(--stroke);
+    }
+
+    .page-header-inner {
+      width: min(100%, 960px);
+      margin: 0 auto;
+    }
+
+    .page-header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+      margin-bottom: 4px
+    }
+
+    .page-header p {
+      color: var(--muted);
+      font-size: 14px
+    }
+
+    /* ── Page: Palette Board ── */
+    #page-palette {
+      display: flex;
+      flex-direction: column;
+      flex: 1
+    }
+
+    #page-naming {
+      display: none;
+      flex: 1;
+      flex-direction: column
+    }
+
+    .page-body-centered {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 40px 60px;
+    }
+
+    .palette-toolbar {
+      padding: 16px 40px;
+      border-bottom: 1px solid var(--stroke-2);
+    }
+
+    .palette-toolbar-inner {
+      width: min(100%, 960px);
+      margin: 0 auto;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .segment {
+      display: inline-flex;
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+      background: var(--panel-2)
+    }
+
+    .segment button {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--text-dim);
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      transition: background .15s, color .15s;
+    }
+
+    .segment button:hover {
+      color: var(--text)
+    }
+
+    .segment button.active {
+      background: rgba(99, 102, 241, .15);
+      color: var(--accent-hover)
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 6px;
+      margin-left: auto
+    }
+
+    .iconbtn {
+      appearance: none;
+      border: 1px solid var(--stroke);
+      background: var(--panel-2);
+      color: var(--text-dim);
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+
+    .iconbtn:hover {
+      background: rgba(255, 255, 255, .06);
+      color: var(--text);
+      border-color: rgba(255, 255, 255, .15)
+    }
+
+    .iconbtn.on {
+      outline: 2px solid var(--ring);
+      outline-offset: 2px
+    }
+
+    /* Grid area */
+    .palette-content {
+      flex: 1;
+      padding: 20px 40px 40px;
+      overflow-y: auto
+    }
+
+    .palette-content-inner {
+      width: min(100%, 960px);
+      margin: 0 auto;
+    }
+
+    .line {
+      display: flex;
+      align-items: stretch;
+      gap: 10px;
+      margin-bottom: 14px
+    }
+
+    .line-title {
+      width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font: 600 11px ui-monospace, Menlo, Consolas;
+      color: var(--muted-2);
+      letter-spacing: .5px;
+    }
+
+    .line-grid {
+      display: grid;
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+      gap: 8px;
+      flex: 1
+    }
+
+    .cell {
+      position: relative;
+      height: 160px;
+      border-radius: var(--cell-radius);
+      overflow: hidden;
+      background: var(--panel-2);
+      border: 1px solid var(--stroke);
+      cursor: pointer;
+      transition: border-color .15s, transform .1s;
+    }
+
+    .cell:hover {
+      border-color: rgba(255, 255, 255, .18);
+      transform: translateY(-1px)
+    }
+
+    .swatch {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit
+    }
+
+    .footer {
+      position: absolute;
+      inset: auto 0 0 0;
+      padding: 6px 8px;
+      display: flex;
+      justify-content: flex-start;
+      gap: 6px;
+      background: rgba(0, 0, 0, .35)
+    }
+
+    .hex {
+      font: 600 11px ui-monospace, Menlo, Consolas;
+      padding: 4px 7px;
+      border-radius: 5px;
+      letter-spacing: .5px;
+      color: rgba(255, 255, 255, .9);
+      background: rgba(0, 0, 0, .4);
+      border: 1px solid rgba(255, 255, 255, .12);
+    }
+
+    .cell.selected {
+      outline: 2px solid var(--ring);
+      outline-offset: 1px
+    }
+
+    .cell::after {
+      content: "Скопировано";
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 10px;
+      background: rgba(0, 0, 0, .5);
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, .12);
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: .2s;
+    }
+
+    .cell.badge::after {
+      opacity: 1;
+      transform: none
+    }
+
+    .add-cell {
+      display: grid;
+      place-items: center;
+      height: 160px;
+      border-radius: var(--cell-radius);
+      border: 1px dashed rgba(255, 255, 255, .15);
+      background: transparent;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: .3px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+
+    .add-cell:hover {
+      border-color: rgba(99, 102, 241, .4);
+      background: rgba(99, 102, 241, .05)
+    }
+
+    .add-cell span {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px
+    }
+
+    .add-cell b {
+      font-size: 20px;
+      line-height: 1
+    }
+
+    /* ── Naming Convention page (markdown) ── */
+    .md-content {
+      width: min(100%, 960px);
+      margin: 0 auto;
+      line-height: 1.75;
+      color: var(--text-dim);
+    }
+
+    .md-content h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 32px 0 12px;
+      letter-spacing: -.3px
+    }
+
+    .md-content h2 {
+      font-size: 21px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 28px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--stroke)
+    }
+
+    .md-content h3 {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 22px 0 8px
+    }
+
+    .md-content h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin: 18px 0 6px
+    }
+
+    .md-content p {
+      margin: 0 0 14px
+    }
+
+    .md-content ul,
+    .md-content ol {
+      margin: 0 0 14px;
+      padding-left: 24px
+    }
+
+    .md-content li {
+      margin-bottom: 4px
+    }
+
+    .md-content code {
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 13px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--panel-2);
+      border: 1px solid var(--stroke);
+    }
+
+    .md-content pre {
+      margin: 0 0 14px;
+      padding: 14px 16px;
+      border-radius: 8px;
+      background: var(--panel-2);
+      border: 1px solid var(--stroke);
+      overflow-x: auto;
+    }
+
+    .md-content pre code {
+      padding: 0;
+      border: none;
+      background: none
+    }
+
+    .md-content blockquote {
+      margin: 0 0 14px;
+      padding: 10px 16px;
+      border-left: 3px solid var(--accent);
+      background: rgba(99, 102, 241, .06);
+      border-radius: 0 6px 6px 0;
+      color: var(--text-dim);
+    }
+
+    .md-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0 0 14px
+    }
+
+    .md-content th,
+    .md-content td {
+      padding: 8px 12px;
+      border: 1px solid var(--stroke);
+      text-align: left;
+      font-size: 13px
+    }
+
+    .md-content th {
+      background: var(--panel-2);
+      color: var(--text);
+      font-weight: 600
+    }
+
+    .md-content hr {
+      border: none;
+      border-top: 1px solid var(--stroke);
+      margin: 24px 0
+    }
+
+    .md-content a {
+      color: var(--accent-hover);
+      text-decoration: none
+    }
+
+    .md-content a:hover {
+      text-decoration: underline
+    }
+
+    .md-content strong {
+      color: var(--text);
+      font-weight: 600
+    }
+
+    .md-loading {
+      padding: 40px;
+      color: var(--muted);
+      font-size: 14px
+    }
+
+    /* ── Dialog ── */
+    dialog {
+      border: 1px solid var(--stroke);
+      border-radius: 12px;
+      padding: 0;
+      width: min(480px, 92vw);
+      background: var(--panel);
+      color: var(--text);
+    }
+
+    dialog::backdrop {
+      background: rgba(0, 0, 0, .6)
+    }
+
+    .modal-head {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--stroke);
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .modal-head strong {
+      font-size: 15px
+    }
+
+    .modal-body {
+      padding: 20px;
+      display: grid;
+      gap: 12px
+    }
+
+    .modal-row {
+      display: flex;
+      gap: 10px;
+      align-items: center
+    }
+
+    .modal-actions {
+      padding: 16px 20px;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      border-top: 1px solid var(--stroke)
+    }
+
+    .input-dark {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--stroke);
+      background: var(--panel-2);
+      color: var(--text);
+      font-weight: 600;
+      letter-spacing: .5px;
+      font-size: 14px;
+    }
+
+    .input-dark:focus {
+      outline: none;
+      border-color: var(--accent)
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted)
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      inset: auto 0 24px 0;
+      margin: auto;
+      width: max-content;
+      z-index: 9999;
+      background: var(--panel);
+      color: var(--text);
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 1px solid var(--stroke);
+      transform: translateY(12px);
+      opacity: 0;
+      transition: .2s;
+      pointer-events: none;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .toast.show {
+      transform: none;
+      opacity: 1
+    }
+
+    /* Responsive */
+    @media(max-width:820px) {
+      .sidebar {
+        width: 220px;
+        min-width: 220px
+      }
+
+      .page-header,
+      .palette-toolbar,
+      .palette-content,
+      .page-body-centered {
+        padding-left: 20px;
+        padding-right: 20px
+      }
+
+      .line-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr))
+      }
+    }
+
+    @media(max-width:600px) {
+      .sidebar {
+        display: none
+      }
+
+      .line-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr))
+      }
+    }
+  </style>
 </head>
+
 <body>
-  <div class="shell">
-    <div class="card">
-      <div class="topbar">
-        <div class="brand">
-          <strong>ArcTale: Palette Board</strong>
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span>ArcTale</span>
+    </div>
+
+    <div class="sidebar-section">
+      <ul class="sidebar-nav">
+        <li><a href="#palette" class="active" data-page="palette">
+            <span class="nav-label">Palette Board</span>
+          </a></li>
+        <li><a href="#naming" data-page="naming">
+            <span class="nav-label">Naming Convention</span>
+          </a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-footer">
+      ArcTale Toolkit &middot; v4.5
+    </div>
+  </aside>
+
+  <!-- ── Main Content ── -->
+  <div class="main">
+
+    <!-- Page: Palette Board -->
+    <div id="page-palette">
+      <div class="page-header">
+        <div class="page-header-inner">
+          <h1>Palette Board</h1>
+          <p>Визуальная палитра цветов проекта. Клик — копировать HEX, двойной клик — редактировать.</p>
         </div>
-        <div class="controls">
+      </div>
+
+      <div class="palette-toolbar">
+        <div class="palette-toolbar-inner">
           <div id="seg" class="segment" role="tablist" aria-label="Разделы палитры">
             <button data-sec="base" class="active" role="tab">основные</button>
             <button data-sec="extra" role="tab">дополнительные</button>
             <button data-sec="accent" role="tab">акценты</button>
             <button data-sec="neon" role="tab">свет/неон</button>
           </div>
-          <button class="iconbtn" id="swapBtn"   title="Свап ⇄">⇄</button>
-          <button class="iconbtn" id="exportBtn" title="Экспорт ⤒">⤒</button>
-          <button class="iconbtn" id="importBtn" title="Импорт ⤓">⤓</button>
+          <div class="toolbar-actions">
+            <button class="iconbtn" id="swapBtn" title="Свап ⇄">⇄</button>
+            <button class="iconbtn" id="exportBtn" title="Экспорт ⤒">⤒</button>
+            <button class="iconbtn" id="importBtn" title="Импорт ⤓">⤓</button>
+          </div>
         </div>
       </div>
-      <div id="section" class="section"></div>
+
+      <div class="palette-content">
+        <div id="section" class="palette-content-inner"></div>
+      </div>
     </div>
+
+    <!-- Page: Naming Convention -->
+    <div id="page-naming">
+      <div class="page-header">
+        <div class="page-header-inner">
+          <h1>Naming Convention</h1>
+          <p>Соглашения об именовании для проекта.</p>
+        </div>
+      </div>
+      <div class="page-body-centered">
+        <div id="md-naming" class="md-content">
+          <p class="md-loading">Загрузка…</p>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- Editor -->
+  <!-- Inline markdown fallback (used when fetch fails, e.g. file:// protocol) -->
+  <script id="md-fallback" type="text/markdown">
+# Naming Convention
+
+> Этот документ описывает соглашения об именовании, принятые в проекте.
+
+---
+
+## Общие правила
+
+- Используйте осмысленные и читаемые имена
+- Избегайте сокращений, если они не общепринятые
+- Придерживайтесь единого стиля во всём проекте
+
+---
+
+## Примеры
+
+| Тип | Формат | Пример |
+| --- | --- | --- |
+| Переменная | camelCase | `playerHealth` |
+| Константа | UPPER_SNAKE | `MAX_SPEED` |
+| Класс | PascalCase | `EnemyController` |
+| Файл | kebab-case | `main-menu.gd` |
+
+---
+
+*Заполните этот файл своими правилами.*
+  </script>
+
+  <!-- Editor dialog -->
   <dialog id="editor">
     <div class="modal-head">
       <strong>Редактировать цвет</strong>
-      <button data-close class="iconbtn" style="width:34px;height:34px;font-size:14px">✕</button>
+      <button data-close class="iconbtn" style="width:30px;height:30px;font-size:13px">✕</button>
     </div>
     <div class="modal-body">
       <div class="modal-row">
-        <input id="colorPicker" type="color" class="input-dark" style="flex:0 0 46px; height:46px; padding:0">
+        <input id="colorPicker" type="color" class="input-dark"
+          style="flex:0 0 46px; height:46px; padding:0; cursor:pointer">
         <input id="hexInput" class="input-dark" placeholder="#RRGGBB" value="#5aa364" style="flex:1">
       </div>
       <div class="hint">Пример: <code>#1A2B3C</code></div>
@@ -131,216 +782,288 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 
   <div id="toast" class="toast" role="status">Готово</div>
 
-<script>
-/* ----- State & storage ----- */
-const sectionEl = document.getElementById('section');
-const seg = document.getElementById('seg');
-const toastEl = document.getElementById('toast');
-const editor = document.getElementById('editor');
-const colorPicker = document.getElementById('colorPicker');
-const hexInput = document.getElementById('hexInput');
-const swapBtn = document.getElementById('swapBtn');
-const exportBtn = document.getElementById('exportBtn');
-const importBtn = document.getElementById('importBtn');
+  <script>
+    /* ═══ Navigation ═══ */
+    const pages = { palette: document.getElementById('page-palette'), naming: document.getElementById('page-naming') };
+    const navLinks = document.querySelectorAll('.sidebar-nav a[data-page]');
 
-let current = (JSON.parse(localStorage.getItem('palette-v43-meta')||'{}').current) || 'base';
-let data;
-let swapMode=false, firstSel=null, editingRef=null; // {line, idx}
-
-function defaults(){
-  const mk = (arr)=> [arr.slice(0,4), [], [], [], []];
-  return {
-    extra:  mk(['#6b5844','#b79558','#c0ab4a','#c38756']),
-    base:   mk(['#1e2026','#2a2f3a','#394458','#4b566e']),
-    accent: mk(['#c86b45','#7dbb44','#3aa6d7','#c16bd8']),
-    neon:   mk(['#00ffa3','#8aff00','#ffd000','#66ccff']),
-  };
-}
-function save(){ localStorage.setItem('palette-v43-data', JSON.stringify(data)); }
-function load(){ try{ return JSON.parse(localStorage.getItem('palette-v43-data')||'null'); }catch(e){ return null; } }
-function saveMeta(){ localStorage.setItem('palette-v43-meta', JSON.stringify({current})); }
-
-// init: попытаться загрузить сохранённые данные, иначе подтянуть из palette-board.json, иначе дефолты
-async function init(){
-  // пробуем localStorage
-  data = load();
-  if(!data){
-    const ok = await tryFetchInitialJson();
-    if(!ok){ data = defaults(); }
-  }
-  render();
-}
-
-// попытка загрузить palette-board.json, лежащий рядом с index.html
-async function tryFetchInitialJson(){
-  try{
-    const res = await fetch('palette-board.json');
-    if(!res.ok) return false;
-    const text = await res.text();
-    const j = JSON.parse(text);
-    if(Array.isArray(j)){
-      data = defaults();
-      data[current][0] = j.map(v => normalizeHex(v));
-    }else if(j && j.data){
-      data = j.data; current = j.current || current;
-    }else if(j && j.extra && j.base && j.accent && j.neon){
-      data = j;
-    }else{
-      return false;
-    }
-    save(); saveMeta();
-    return true;
-  }catch(_){
-    return false;
-  }
-}
-
-/* ----- Utils ----- */
-function normalizeHex(hex){
-  if(!hex) return null;
-  hex = String(hex).trim().replace(/^#/,'').toUpperCase();
-  if(/^[0-9A-F]{3}$/.test(hex)) hex = hex.split('').map(c=>c+c).join('');
-  if(!/^[0-9A-F]{6}$/.test(hex)) return null;
-  return '#'+hex;
-}
-async function copyText(t){ try{ await navigator.clipboard.writeText(t); showToast('Скопировано: '+t); }catch(_){ showToast('Не удалось скопировать'); } }
-let toastTimer; function showToast(m){ toastEl.textContent=m; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>toastEl.classList.remove('show'),1200); }
-
-/* ----- Render ----- */
-function renderSeg(){ seg.querySelectorAll('button').forEach(b=> b.classList.toggle('active', b.dataset.sec===current)); }
-function render(){
-  renderSeg();
-  const lines = data[current];
-  sectionEl.innerHTML='';
-  lines.forEach((cells, lineIndex)=>{
-    const row = document.createElement('div'); row.className='line';
-
-    const title = document.createElement('div'); title.className='line-title'; title.textContent=String(lineIndex+1).padStart(2,'0');
-    row.appendChild(title);
-
-    const grid = document.createElement('div'); grid.className='line-grid';
-
-    const addCellNode = createAddCell(lineIndex);
-
-    if(cells.length===0){ grid.appendChild(addCellNode); }
-    cells.forEach((hex, idx)=>{
-      const c = createCell(hex, lineIndex, idx);
-      grid.appendChild(c);
-    });
-    if(cells.length>0 && cells.length<10){ grid.appendChild(addCellNode); }
-
-    row.appendChild(grid);
-    sectionEl.appendChild(row);
-  });
-}
-function createCell(hex, lineIndex, idx){
-  const cell = document.createElement('div');
-  cell.className='cell';
-  if(swapMode && firstSel && firstSel.line===lineIndex && firstSel.idx===idx) cell.classList.add('selected');
-
-  const sw = document.createElement('div'); sw.className='swatch'; if(hex) sw.style.background=hex; cell.appendChild(sw);
-
-  const footer = document.createElement('div'); footer.className='footer';
-  const label = document.createElement('span'); label.className='hex'; label.textContent=hex || '(пусто)'; footer.appendChild(label);
-  cell.appendChild(footer);
-
-  cell.addEventListener('click', ()=>{
-    if(hex){ copyText(hex); cell.classList.add('badge'); setTimeout(()=> cell.classList.remove('badge'), 800); }
-    if(swapMode){ handleSwap(lineIndex, idx); }
-  });
-  cell.addEventListener('dblclick', ()=> openEditor(lineIndex, idx));
-  return cell;
-}
-function createAddCell(lineIndex){
-  const ac = document.createElement('div');
-  ac.className='add-cell';
-  ac.innerHTML = '<span><b>＋</b>добавить</span>';
-  ac.title = 'Добавить цвет в эту линию';
-  ac.addEventListener('click', ()=>{
-    if(data[current][lineIndex].length>=10){ showToast('Макс. 10 ячеек'); return; }
-    const newIdx = data[current][lineIndex].push(null) - 1;
-    save();
-    render();
-    openEditor(lineIndex, newIdx);
-  });
-  return ac;
-}
-
-/* ----- Actions ----- */
-function openEditor(line, idx){
-  editingRef = {line, idx};
-  const cur = normalizeHex(data[current][line][idx]) || '#5aa364';
-  colorPicker.value = cur; hexInput.value = cur; editor.showModal();
-}
-function removeColor(line, idx){
-  data[current][line].splice(idx,1); save(); render();
-}
-function handleSwap(line, idx){
-  if(!swapMode){ return; }
-  if(!firstSel){ firstSel = {line, idx}; render(); return; }
-  if(firstSel.line===line && firstSel.idx===idx){ firstSel=null; render(); return; }
-  const a=firstSel, b={line, idx};
-  const va = data[current][a.line][a.idx]; const vb = data[current][b.line][b.idx];
-  data[current][a.line][a.idx] = vb; data[current][b.line][b.idx] = va;
-  firstSel=null; save(); showToast('Поменяли местами'); render();
-}
-
-/* ----- Toolbar & editor wiring ----- */
-seg.addEventListener('click', (e)=>{
-  const btn = e.target.closest('button[data-sec]'); if(!btn) return;
-  current = btn.dataset.sec; saveMeta(); firstSel=null; render();
-});
-swapBtn.addEventListener('click', ()=>{
-  swapMode = !swapMode; firstSel=null;
-  swapBtn.classList.toggle('on', swapMode);
-  showToast(swapMode ? 'Свап: выберите 2 ячейки' : 'Свап выключен');
-});
-
-exportBtn.addEventListener('click', ()=>{
-  try{
-    const payload = JSON.stringify({current, data});
-    const blob = new Blob([payload], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = Object.assign(document.createElement('a'), {href:url, download:'palette-board-v43.json'});
-    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    showToast('Экспортировано');
-  }catch(_){ showToast('Ошибка экспорта'); }
-});
-importBtn.addEventListener('click', ()=>{
-  const input = document.createElement('input'); input.type='file'; input.accept='application/json';
-  input.onchange = async ()=>{
-    const file = input.files[0]; if(!file) return;
-    try{
-      const text = await file.text(); const j = JSON.parse(text);
-      if(Array.isArray(j)){
-        data[current][0] = j.map(v => normalizeHex(v));
-      }else if(j && j.data){
-        data = j.data; current = j.current || current;
-      }else if(j && j.extra && j.base && j.accent && j.neon){
-        data = j;
-      }else{
-        throw new Error('bad');
+    function switchPage(id) {
+      Object.values(pages).forEach(p => p.style.display = 'none');
+      navLinks.forEach(a => a.classList.remove('active'));
+      if (pages[id]) {
+        pages[id].style.display = 'flex';
+        document.querySelector(`a[data-page="${id}"]`)?.classList.add('active');
       }
-      save(); saveMeta(); render(); showToast('Импортировано');
-    }catch(_){ showToast('Некорректный JSON'); }
-  };
-  input.click();
-});
-document.getElementById('saveBtn').addEventListener('click', ()=>{
-  const n = normalizeHex(hexInput.value);
-  if(!n){ showToast('Неверный HEX'); return; }
-  const {line, idx} = editingRef;
-  data[current][line][idx] = n; save(); render(); editor.close();
-});
-document.getElementById('deleteBtn').addEventListener('click', ()=>{
-  const {line, idx} = editingRef; removeColor(line, idx); editor.close();
-});
-document.querySelectorAll('[data-close]').forEach(b=> b.addEventListener('click', ()=> editor.close()));
-colorPicker.addEventListener('input', ()=> hexInput.value = colorPicker.value.toUpperCase());
-hexInput.addEventListener('input', ()=>{ const n = normalizeHex(hexInput.value); if(n){ colorPicker.value = n; } });
+    }
+    navLinks.forEach(a => a.addEventListener('click', e => {
+      e.preventDefault();
+      switchPage(a.dataset.page);
+      history.replaceState(null, '', '#' + a.dataset.page);
+    }));
 
-// init
-init();
-</script>
+    // restore from hash
+    const initPage = location.hash.replace('#', '') || 'palette';
+    switchPage(initPage);
+
+    /* ═══ Palette Board — State & storage ═══ */
+    const sectionEl = document.getElementById('section');
+    const seg = document.getElementById('seg');
+    const toastEl = document.getElementById('toast');
+    const editor = document.getElementById('editor');
+    const colorPicker = document.getElementById('colorPicker');
+    const hexInput = document.getElementById('hexInput');
+    const swapBtn = document.getElementById('swapBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+
+    let current = (JSON.parse(localStorage.getItem('palette-v43-meta') || '{}').current) || 'base';
+    let data;
+    let swapMode = false, firstSel = null, editingRef = null;
+
+    function defaults() {
+      const mk = (arr) => [arr.slice(0, 4), [], [], [], []];
+      return {
+        extra: mk(['#6b5844', '#b79558', '#c0ab4a', '#c38756']),
+        base: mk(['#1e2026', '#2a2f3a', '#394458', '#4b566e']),
+        accent: mk(['#c86b45', '#7dbb44', '#3aa6d7', '#c16bd8']),
+        neon: mk(['#00ffa3', '#8aff00', '#ffd000', '#66ccff']),
+      };
+    }
+    function save() { localStorage.setItem('palette-v43-data', JSON.stringify(data)); }
+    function load() { try { return JSON.parse(localStorage.getItem('palette-v43-data') || 'null'); } catch (e) { return null; } }
+    function saveMeta() { localStorage.setItem('palette-v43-meta', JSON.stringify({ current })); }
+
+    async function init() {
+      data = load();
+      if (!data) {
+        const ok = await tryFetchInitialJson();
+        if (!ok) { data = defaults(); }
+      }
+      render();
+    }
+
+    async function tryFetchInitialJson() {
+      try {
+        const res = await fetch('palette-board.json');
+        if (!res.ok) return false;
+        const text = await res.text();
+        const j = JSON.parse(text);
+        if (Array.isArray(j)) {
+          data = defaults();
+          data[current][0] = j.map(v => normalizeHex(v));
+        } else if (j && j.data) {
+          data = j.data; current = j.current || current;
+        } else if (j && j.extra && j.base && j.accent && j.neon) {
+          data = j;
+        } else {
+          return false;
+        }
+        save(); saveMeta();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    /* ═══ Utils ═══ */
+    function normalizeHex(hex) {
+      if (!hex) return null;
+      hex = String(hex).trim().replace(/^#/, '').toUpperCase();
+      if (/^[0-9A-F]{3}$/.test(hex)) hex = hex.split('').map(c => c + c).join('');
+      if (!/^[0-9A-F]{6}$/.test(hex)) return null;
+      return '#' + hex;
+    }
+    async function copyText(t) { try { await navigator.clipboard.writeText(t); showToast('Скопировано: ' + t); } catch (_) { showToast('Не удалось скопировать'); } }
+    let toastTimer; function showToast(m) { toastEl.textContent = m; toastEl.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1200); }
+
+    /* ═══ Render ═══ */
+    function renderSeg() { seg.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.sec === current)); }
+    function render() {
+      renderSeg();
+      const lines = data[current];
+      sectionEl.innerHTML = '';
+      lines.forEach((cells, lineIndex) => {
+        const row = document.createElement('div'); row.className = 'line';
+        const title = document.createElement('div'); title.className = 'line-title'; title.textContent = String(lineIndex + 1).padStart(2, '0');
+        row.appendChild(title);
+
+        const grid = document.createElement('div'); grid.className = 'line-grid';
+        const addCellNode = createAddCell(lineIndex);
+
+        if (cells.length === 0) { grid.appendChild(addCellNode); }
+        cells.forEach((hex, idx) => grid.appendChild(createCell(hex, lineIndex, idx)));
+        if (cells.length > 0 && cells.length < 10) { grid.appendChild(addCellNode); }
+
+        row.appendChild(grid);
+        sectionEl.appendChild(row);
+      });
+    }
+    function createCell(hex, lineIndex, idx) {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      if (swapMode && firstSel && firstSel.line === lineIndex && firstSel.idx === idx) cell.classList.add('selected');
+
+      const sw = document.createElement('div'); sw.className = 'swatch'; if (hex) sw.style.background = hex; cell.appendChild(sw);
+      const footer = document.createElement('div'); footer.className = 'footer';
+      const label = document.createElement('span'); label.className = 'hex'; label.textContent = hex || '(пусто)'; footer.appendChild(label);
+      cell.appendChild(footer);
+
+      cell.addEventListener('click', () => {
+        if (swapMode) { handleSwap(lineIndex, idx); return; }
+        if (hex) { copyText(hex); cell.classList.add('badge'); setTimeout(() => cell.classList.remove('badge'), 800); }
+      });
+      cell.addEventListener('dblclick', () => openEditor(lineIndex, idx));
+      return cell;
+    }
+    function createAddCell(lineIndex) {
+      const ac = document.createElement('div');
+      ac.className = 'add-cell';
+      ac.innerHTML = '<span><b>＋</b>добавить</span>';
+      ac.title = 'Добавить цвет в эту линию';
+      ac.addEventListener('click', () => {
+        if (data[current][lineIndex].length >= 10) { showToast('Макс. 10 ячеек'); return; }
+        const newIdx = data[current][lineIndex].push(null) - 1;
+        save(); render(); openEditor(lineIndex, newIdx);
+      });
+      return ac;
+    }
+
+    /* ═══ Actions ═══ */
+    function openEditor(line, idx) {
+      editingRef = { line, idx };
+      const cur = normalizeHex(data[current][line][idx]) || '#5aa364';
+      colorPicker.value = cur; hexInput.value = cur; editor.showModal();
+    }
+    function removeColor(line, idx) { data[current][line].splice(idx, 1); save(); render(); }
+    function handleSwap(line, idx) {
+      if (!swapMode) return;
+      if (!firstSel) { firstSel = { line, idx }; render(); return; }
+      if (firstSel.line === line && firstSel.idx === idx) { firstSel = null; render(); return; }
+      const a = firstSel, b = { line, idx };
+      const va = data[current][a.line][a.idx], vb = data[current][b.line][b.idx];
+      data[current][a.line][a.idx] = vb; data[current][b.line][b.idx] = va;
+      firstSel = null; save(); showToast('Поменяли местами'); render();
+    }
+
+    /* ═══ Toolbar & editor wiring ═══ */
+    seg.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-sec]'); if (!btn) return;
+      current = btn.dataset.sec; saveMeta(); firstSel = null; render();
+    });
+    swapBtn.addEventListener('click', () => {
+      swapMode = !swapMode; firstSel = null;
+      swapBtn.classList.toggle('on', swapMode);
+      showToast(swapMode ? 'Свап: выберите 2 ячейки' : 'Свап выключен');
+    });
+    exportBtn.addEventListener('click', () => {
+      try {
+        const payload = JSON.stringify({ current, data });
+        const blob = new Blob([payload], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = Object.assign(document.createElement('a'), { href: url, download: 'palette-board-v43.json' });
+        document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+        showToast('Экспортировано');
+      } catch (_) { showToast('Ошибка экспорта'); }
+    });
+    importBtn.addEventListener('click', () => {
+      const input = document.createElement('input'); input.type = 'file'; input.accept = 'application/json';
+      input.onchange = async () => {
+        const file = input.files[0]; if (!file) return;
+        try {
+          const text = await file.text(); const j = JSON.parse(text);
+          if (Array.isArray(j)) {
+            data[current][0] = j.map(v => normalizeHex(v));
+          } else if (j && j.data) {
+            data = j.data; current = j.current || current;
+          } else if (j && j.extra && j.base && j.accent && j.neon) {
+            data = j;
+          } else {
+            throw new Error('bad');
+          }
+          save(); saveMeta(); render(); showToast('Импортировано');
+        } catch (_) { showToast('Некорректный JSON'); }
+      };
+      input.click();
+    });
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      const n = normalizeHex(hexInput.value);
+      if (!n) { showToast('Неверный HEX'); return; }
+      const { line, idx } = editingRef;
+      data[current][line][idx] = n; save(); render(); editor.close();
+    });
+    document.getElementById('deleteBtn').addEventListener('click', () => {
+      const { line, idx } = editingRef; removeColor(line, idx); editor.close();
+    });
+    document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => editor.close()));
+    colorPicker.addEventListener('input', () => hexInput.value = colorPicker.value.toUpperCase());
+    hexInput.addEventListener('input', () => { const n = normalizeHex(hexInput.value); if (n) { colorPicker.value = n; } });
+
+    /* ═══ Markdown loader (naming convention) ═══ */
+    (function () {
+      const container = document.getElementById('md-naming');
+      const fallback = document.getElementById('md-fallback');
+
+      function renderMd(md) { container.innerHTML = parseMd(md); }
+
+      fetch('naming-convention.md')
+        .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+        .then(renderMd)
+        .catch(() => {
+          // file:// protocol fallback — use inline markdown
+          if (fallback && fallback.textContent.trim()) {
+            renderMd(fallback.textContent);
+          } else {
+            container.innerHTML = '<p class="md-loading">Не удалось загрузить naming-convention.md</p>';
+          }
+        });
+
+      function parseMd(src) {
+        let html = src.replace(/\r\n?/g, '\n');
+        html = html
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        // fenced code blocks
+        html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>
+          '<pre><code' + (lang ? ' class="lang-' + lang + '"' : '') + '>' + code.trimEnd() + '</code></pre>');
+        // inline code
+        html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+        // headings
+        html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+        html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+        html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+        html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+        // hr
+        html = html.replace(/^---$/gm, '<hr>');
+        // blockquote
+        html = html.replace(/^&gt; (.+)$/gm, '<blockquote><p>$1</p></blockquote>');
+        // bold & italic
+        html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+        // images
+        html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2" style="max-width:100%;border-radius:6px;margin:8px 0">');
+        // links
+        html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+        // unordered lists
+        html = html.replace(/^((?:- .+\n?)+)/gm, m => {
+          const items = m.trim().split('\n').map(l => '<li>' + l.replace(/^- /, '') + '</li>').join('');
+          return '<ul>' + items + '</ul>';
+        });
+        // tables
+        html = html.replace(/^(\|.+\|\n\|[-| :]+\|\n(?:\|.+\|\n?)*)/gm, m => {
+          const rows = m.trim().split('\n').filter(r => !/^\|[-| :]+\|$/.test(r));
+          const hdr = rows[0].split('|').filter(c => c).map(c => '<th>' + c.trim() + '</th>').join('');
+          const body = rows.slice(1).map(r => '<tr>' + r.split('|').filter(c => c).map(c => '<td>' + c.trim() + '</td>').join('') + '</tr>').join('');
+          return '<table><thead><tr>' + hdr + '</tr></thead><tbody>' + body + '</tbody></table>';
+        });
+        // paragraphs
+        html = html.replace(/^(?!<[hupbtoia]|<li|<hr|<pre|\|)(.+)$/gm, '<p>$1</p>');
+        // clean up extra blank lines
+        html = html.replace(/\n{2,}/g, '\n');
+        return html;
+      }
+    })();
+
+    init();
+  </script>
 </body>
+
 </html>

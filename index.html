@@ -731,32 +731,61 @@
 
   <!-- Inline markdown fallback (used when fetch fails, e.g. file:// protocol) -->
   <script id="md-fallback" type="text/markdown">
-# Naming Convention
+## Общие принципы
 
-> Этот документ описывает соглашения об именовании, принятые в проекте.
+Название файлов и путь их расположения в проекте выдаётся вместе с техническим заданием.
 
----
+В именах не используются пробелы, тире и дефисы, только нижние подчёркивания. Индексация обязательна с первой версии ассета: `_01`, `_02`, `_03` и так далее.
 
-## Общие правила
+В проекте используется принцип двух папок: структура размещения ассета в контенте и имя самого ассета должны быть согласованы между собой. Имя ресурса должно отражать директорию, к которой он относится, и собственное имя объекта.
 
-- Используйте осмысленные и читаемые имена
-- Избегайте сокращений, если они не общепринятые
-- Придерживайтесь единого стиля во всём проекте
+Например, если ассет лежит в папке `Content\ArcProject\Art\Environments\DepotProps\Art`, то имя должно собираться по схеме с названием директории и названием ассета, например: `SM_DepotProps_Art_Paintings_01`.
 
----
+## Правила именования ассетов
 
-## Примеры
+### Префиксы
 
-| Тип | Формат | Пример |
+| Тип ассета | Префикс | Пример |
 | --- | --- | --- |
-| Переменная | camelCase | `playerHealth` |
-| Константа | UPPER_SNAKE | `MAX_SPEED` |
-| Класс | PascalCase | `EnemyController` |
-| Файл | kebab-case | `main-menu.gd` |
+| Static Mesh | `SM_` | `SM_DepotProps_Paintings_01` |
+| Master Material | `MM_` | `MM_Glass_01` |
+| Material | `M_` | `M_Glass_01` |
+| Texture | `T_` | `T_DepotProps_Paintings_D_01` |
 
----
+### Static Mesh
 
-*Заполните этот файл своими правилами.*
+Формат имени:
+
+`SM_<DirectoryName>_<AssetName>_<Index>`
+
+Примеры:
+
+- `SM_DepotProps_Art_Paintings_01`
+- `SM_Train_ArtifactFigurines_01`
+
+### Texture
+
+Формат имени:
+
+`T_<DirectoryName>_<AssetName>_<TextureType>_<Index>`
+
+Примеры:
+
+- `T_DepotProps_Paintings_D_01`
+- `T_DepotProps_Paintings_ORM_01`
+- `T_DepotProps_Paintings_N_01`
+- `T_DepotProps_Paintings_M_01`
+
+Тип текстуры указывается перед индексом. Это обновлённое правило: в старой схеме порядок типа и индекса мог отличаться.
+
+#### Типы текстур
+
+| Обозначение | Назначение |
+| --- | --- |
+| `D` | Base Color |
+| `ORM` | AO / Roughness / Metallic |
+| `N` | Normal |
+| `M`, `M1`, `M2` | Mask |
   </script>
 
   <!-- Editor dialog -->
@@ -788,12 +817,11 @@
     const navLinks = document.querySelectorAll('.sidebar-nav a[data-page]');
 
     function switchPage(id) {
+      if (!pages[id]) id = 'palette';
       Object.values(pages).forEach(p => p.style.display = 'none');
       navLinks.forEach(a => a.classList.remove('active'));
-      if (pages[id]) {
-        pages[id].style.display = 'flex';
-        document.querySelector(`a[data-page="${id}"]`)?.classList.add('active');
-      }
+      pages[id].style.display = 'flex';
+      document.querySelector(`a[data-page="${id}"]`)?.classList.add('active');
     }
     navLinks.forEach(a => a.addEventListener('click', e => {
       e.preventDefault();
@@ -835,34 +863,34 @@
 
     async function init() {
       data = load();
-      if (!data) {
-        const ok = await tryFetchInitialJson();
-        if (!ok) { data = defaults(); }
-      }
+      await syncFromRepoJson();
+      if (!data) { data = defaults(); }
       render();
     }
 
-    async function tryFetchInitialJson() {
+    // Запрашивает palette-board.json при каждой загрузке, но применяет его,
+    // только если файл в репозитории изменился с прошлого применения, —
+    // локальные правки между обновлениями репозитория сохраняются.
+    async function syncFromRepoJson() {
       try {
-        const res = await fetch('palette-board.json');
-        if (!res.ok) return false;
+        const res = await fetch('palette-board.json', { cache: 'no-cache' });
+        if (!res.ok) return;
         const text = await res.text();
+        if (data && text === localStorage.getItem('palette-v43-src')) return;
         const j = JSON.parse(text);
         if (Array.isArray(j)) {
-          data = defaults();
+          data = data || defaults();
           data[current][0] = j.map(v => normalizeHex(v));
         } else if (j && j.data) {
           data = j.data; current = j.current || current;
         } else if (j && j.extra && j.base && j.accent && j.neon) {
           data = j;
         } else {
-          return false;
+          return;
         }
+        localStorage.setItem('palette-v43-src', text);
         save(); saveMeta();
-        return true;
-      } catch (_) {
-        return false;
-      }
+      } catch (_) { }
     }
 
     /* ═══ Utils ═══ */
@@ -1021,9 +1049,12 @@
         let html = src.replace(/\r\n?/g, '\n');
         html = html
           .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        // fenced code blocks
-        html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>
-          '<pre><code' + (lang ? ' class="lang-' + lang + '"' : '') + '>' + code.trimEnd() + '</code></pre>');
+        // fenced code blocks — extract to placeholders so line-based rules below can't touch their content
+        const fenced = [];
+        html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+          fenced.push('<pre><code' + (lang ? ' class="lang-' + lang + '"' : '') + '>' + code.trimEnd() + '</code></pre>');
+          return '\u0000' + (fenced.length - 1) + '\u0000';
+        });
         // inline code
         html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
         // headings
@@ -1055,9 +1086,11 @@
           return '<table><thead><tr>' + hdr + '</tr></thead><tbody>' + body + '</tbody></table>';
         });
         // paragraphs
-        html = html.replace(/^(?!<[hupbtoia]|<li|<hr|<pre|\|)(.+)$/gm, '<p>$1</p>');
+        html = html.replace(/^(?!<[hupbtoia]|<li|<hr|<pre|\||\u0000)(.+)$/gm, '<p>$1</p>');
         // clean up extra blank lines
         html = html.replace(/\n{2,}/g, '\n');
+        // restore fenced code blocks
+        html = html.replace(/\u0000(\d+)\u0000/g, (_, i) => fenced[i]);
         return html;
       }
     })();

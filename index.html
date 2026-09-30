@@ -1121,6 +1121,29 @@
       color: var(--muted-2)
     }
 
+    .tree-future .icon,
+    .tree-future .tree-name {
+      color: var(--muted-2)
+    }
+
+    /* Карточки в две колонки */
+    .md-content .cols {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin: 0 0 16px
+    }
+
+    .md-content .cols .card {
+      margin: 0
+    }
+
+    @media (max-width: 640px) {
+      .md-content .cols {
+        grid-template-columns: minmax(0, 1fr)
+      }
+    }
+
     /* Шаблон имени из цветных токенов */
     .formula {
       display: flex;
@@ -1971,7 +1994,7 @@
 ## Корень проекта {#root}
 
 ::: card Основная директория {#main-folder}
-Рабочие ассеты проекта лежат в `Content/ArcProject`.
+`Content/ArcProject/Art` — арт-ассеты. Папки верхнего уровня внутри `Art` создаются только по согласованию с лидом.
 :::
 
 ## Структура {#structure}
@@ -1979,58 +2002,135 @@
 ```tree
 Content
   ArcProject
-    Art — весь арт проекта
-      Characters — персонажи
-      Core — общий тех-арт
-      Environments — окружение
-      Props — пропсы
-      Train — поезд
+    Art
+      Core — общий тех-арт, ни от кого не зависит
+        Blueprints
+        Materials — мастер-материалы, функции, инстансы
+        Textures — маски, шумы, градиенты
+      Characters — всё, что так или иначе персонажка
+        Human — люди
+          <Name> — ключевой персонаж
+          Other — второстепенные: Other/<Name>
+          Shared — общий риг, скелет, анимации людей
+        Creature — существа: Creature/<Name>
+          Shared
+      Environments
+        Buildings
+        Shared — общее окружение: террейн, вода, небо
+        <Theme> — окружение конкретной локации
+      Vegetation — растительность
+        Shared — общая растительность
+        <Theme> — растительность конкретной локации
+      Props — мелкие и средние объекты
+        Shared — общие пропсы
+        <Theme> — набор простых объектов по теме
+      Train
+        Base
+        Frame — фреймы и меш сокета: SM_Train_Frame_Socket_01
+        Sheathing — обшивка по стилям
+          Default — Cabin, Floor, Wall, Roof: SM_Sheathing_Default_Cabin_01
+          <Style> — стиль, если он тянет больше одного меша
+        Ram? — тараны
+        Module? — модули по подпапкам
+      Weapon? — оружие
+        Shared? — общие атачменты по классу: Attachment/Scope
+        <Name>?
+      Vehicle? — транспорт, как Train
 ```
 
-::: card Разделы Art {#art-folders}
-- `Core` Тех-арт: блюпринты, материалы, текстуры и другие ассеты, которые переиспользуются во всём арте
-- `Characters` Всё, что связано с персонажами: MetaHuman, скелетал меши, скелеты, анимации и т. д.
-- `Environments` Окружение: аутдоры, растительность и другие элементы локаций
-- `Props` Мелкие и средние объекты
-- `Train` Всё, что относится к поезду
+> [!NOTE] Множественное число
+> `Characters`, `Environments`, `Props`, `Buildings` созданы по старому правилу. Новые папки называются в единственном числе. Серые папки появятся вместе с контентом.
+
+::: half Characters {#characters}
+Всё, что так или иначе персонажка, лежит здесь, а не в корне: MetaHuman, скелетал меши, скелеты, анимации. Люди — в `Human/<Name>`, второстепенные — в `Human/Other`, общий риг людей — в `Human/Shared`. Существа от зверей до боссов — в `Creature/<Name>`.
 :::
 
-> [!NOTE] Множественное число в Art
-> `Characters`, `Environments` и `Props` созданы по старому правилу. Новые папки называются в единственном числе, см. [правило ниже](#directories/singular).
-
-## Именование папок {#folder-naming}
-
-::: card Базовые правила {#folder-basics}
-- Латиница, каждое слово с заглавной буквы: `WallLamp`, `MetalFence`.
-- Без пробелов, дефисов и тире.
+::: half Environments {#environments}
+Аутдоры, здания. Общее окружение — в `Shared`, окружение конкретной локации — в её теме.
 :::
 
-::: card Папки в единственном числе {#singular} | Правило
-- (+) `Frame`, `Floor`, `Socket`, `Base`
-- (-) `Frames`, `Floors`, `Sockets`, `Bases`
-
----
-
-- **Единообразие.** Множественное число ломается на неисчисляемых и неправильных словах: `Glass`, `Foliage`, `Shelves`. Единственное число работает всегда.
-- **Совпадает с именем ассета.** `SM_Train_Frame_01` лежит в `Train/Frame`, путь читается как одно имя.
-- **Так делает Epic.** В Allar's Style Guide, Lyra и стартовых проектах папки называются `Character`, `Weapon`, `Prop`, `Environment`.
+::: half Vegetation {#vegetation}
+Растительность лежит на уровне `Art`, рядом с `Props`, а не внутри `Environments`. Схема та же: общая — в `Shared`, конкретной локации — в теме.
 :::
 
-## Путь и имя ассета {#asset-names}
+::: half Props {#props}
+Мелкие и средние объекты. Общие — в `Shared`, остальные — по теме, а не по геймплейной функции: разрушаемость и интерактивность решает блюпринт, не папка.
+:::
 
-::: card Имя повторяет путь {#name-from-path}
-Имя ассета собирается из директории, в которой он лежит, и собственного имени объекта. Поэтому папку выбирают до того, как называть ассет.
+::: half Train {#train}
+`Base` и `Frame` — основа. Обшивка — `Sheathing/<Style>`: пол, стены, кабины, крыши и декор-модули на стены, если стиль сдаётся паком. Стиль получает свою папку, только если тянет больше одного меша, иначе — в `Default`. Светильники и другие модули от стиля — в папке стиля. Меши стройки хаба вне поезда — в `Props`.
+:::
 
-- [Как путь превращается в имя](#naming/name-from-path)
-- [Префиксы типов ассетов](#naming/prefixes)
-- [Шаблоны имён](#naming/templates)
+::: half Weapon {#weapon}
+Атачмент, общий для класса оружия, — в `Weapon/Shared/Attachment`. Уникальный для одной пушки — внутри её папки.
+:::
+
+## Типовые папки {#typed-folders}
+
+::: card Materials и Textures {#materials-textures}
+Единственные типовые папки — `Materials` и `Textures`. `Textures` лежит внутри `Materials`. Меши лежат прямо в папке объекта, папка `Meshes` не создаётся.
+
+- Типовые папки — во множественном числе, так они отличаются от смысловых.
+- В имя ассета типовые папки **не входят**. Все остальные папки — смысловые, в единственном числе, и в имя входят.
+- **Исключение — `Core`:** там `Textures` на одном уровне с `Materials`, потому что текстуры Core работают во внешних материалах, а не только в мастер-материалах Core.
+
+```tree
+Props
+  Generator
+    SM_Props_Generator_01
+    Materials
+      MI_Props_Generator_01
+      Textures
+        T_Props_Generator_D_01
+        T_Props_Generator_ORM_01
+```
+:::
+
+## Принципы {#principles}
+
+::: half Ассет лежит рядом с владельцем {#ownership}
+Уникальный материал персонажа — в папке персонажа. Общий для всех людей — в `Characters/Human/Shared`. Общий для всего арта — в `Core`. Зависимости только вниз: объект берёт из `Core`, `Core` не зависит от объекта.
+:::
+
+::: half Shared и темы {#shared-theme}
+В каждом разделе одна схема: `Shared` для общих ассетов и `<Theme>` для ассетов конкретной локации, набора или объекта. Ассет, который используется в одной теме, лежит в ней, а не в `Shared`.
+:::
+
+::: half Папка появляется вместе с контентом {#folder-with-content}
+Пустые папки заранее не создаются. Для простого пропа не нужны свои `Materials`, если у него нет материалов. Глубина — не более пяти уровней после `Art`.
+:::
+
+::: half Нет глобальных папок по типу {#no-type-folders}
+- (-) `Art/Meshes`, `Art/Textures`, `Art/Animations`
+
+Ассет теряет принадлежность, файлы одного объекта разбросаны по проекту.
+:::
+
+::: half Нет папок-статусов {#no-status-folders}
+- (-) `WIP`, `Review`, `Approved`, `Final`, `Old`, `Backup`, `Temp`, `New`
+
+Статус живёт в трекере, а не в пути. Перемещение между такими папками плодит редиректоры.
+:::
+
+::: half В Art только визуал {#visual-only}
+Блюпринты в `Art` только собирают или показывают визуальную часть объекта. Геймплейная логика хранится за пределами `Art`. Упаковка каналов в проекте одна — ORM.
+:::
+
+::: half Именование папок {#folder-naming}
+- PascalCase, латиница: `WallLamp`, `MetalFence`. Без пробелов, дефисов и подчёркиваний.
+- Смысловые папки — в единственном числе: `Frame`, `Floor`, `Socket`. Множественное ломается на `Glass`, `Foliage`, `Shelves`.
+- Имя ассета повторяет путь: `Train/Frame` → `SM_Train_Frame_01`. Префиксы и шаблоны — в [Naming Convention](#naming).
+:::
+
+::: half Массовые переносы {#mass-moves}
+Массовое перемещение и переименование — только по согласованию с лидом. После переноса проверить зависимости, карты и блюпринты, использующие ассеты, и запустить **Update Redirector References**.
 :::
 
 ## Тестовая и рабочая папки {#workflow}
 
 ::: card После апрува {#after-approval}
 - Пока ассет не прошёл апрув, он живёт в вашей личной тестовой папке.
-- После апрува **все** ассеты переносятся в рабочую папку внутри `Content/ArcProject` по структуре выше и получают имена по [Naming Convention](#naming).
+- После апрува **все** ассеты переносятся в рабочую папку внутри `Content/ArcProject/Art` по структуре выше и получают имена по [Naming Convention](#naming).
 - После переноса тестовую папку нужно почистить: копии, старые версии и неиспользуемые ассеты удаляются.
 
 > [!WARNING] Переносить только через Content Browser
@@ -2719,6 +2819,11 @@ Content
       // Таблицы с горизонтальным скроллом, id у заголовков, оглавление, ссылки на карточки.
       // Явный якорь пишется в конце заголовка: «## Префиксы {#prefixes}».
       function enhance(page, container, toc) {
+        container.querySelectorAll('.card-half').forEach(c => {
+          if (c.previousElementSibling?.classList.contains('cols')) { c.previousElementSibling.appendChild(c); return; }
+          const grid = el('div', 'cols');
+          c.replaceWith(grid); grid.appendChild(c);
+        });
         container.querySelectorAll('table').forEach(t => {
           const wrap = el('div', 'table-wrap');
           t.replaceWith(wrap); wrap.appendChild(t);
@@ -2765,7 +2870,7 @@ Content
       /* Мини-парсер markdown. Помимо базового синтаксиса понимает:
          ::: card Заголовок | Бейдж … :::     карточка
          > [!NOTE|TIP|IMPORTANT|WARNING|CAUTION]  выноска
-         ```tree … ```                         дерево папок
+         ```tree … ```                         дерево папок, «Name?» — появится с контентом
          строка `A_<Name>_<Index>`             шаблон имени
          строка `путь` → `имя`                 сопоставление
          - `KEY` Описание — `пример`           строки определений
@@ -2780,9 +2885,11 @@ Content
         let out = '', depth = -1;
         src.split('\n').filter(l => l.trim()).forEach(l => {
           const d = l.search(/\S/) >> 1;
-          const [name, desc] = l.trim().split(' — ');
+          let [name, desc] = l.trim().split(' — ');
+          const future = name.endsWith('?');
+          if (future) name = name.slice(0, -1);
           out += d > depth ? '<ul>'.repeat(d - depth) : '</li>' + '</ul></li>'.repeat(depth - d);
-          out += '<li><div class="tree-item">' + ICON('folder') + '<span class="tree-name">' + name + '</span>' +
+          out += '<li><div class="tree-item' + (future ? ' tree-future' : '') + '">' + ICON('folder') + '<span class="tree-name">' + name + '</span>' +
             (desc ? '<span class="tree-desc">' + inline(desc) + '</span>' : '') + '</div>';
           depth = d;
         });
@@ -2793,7 +2900,11 @@ Content
       const CODE_ONLY = /^<code>[^<]+<\/code>$/;
       const DEF_ITEM = /^((?:<code>[^<]+<\/code>(?:, )?)+) (.+?)(?: — (<code>[^<]+<\/code>))?$/;
 
+      // Готовые блоки прячутся в плейсхолдеры. Список общий для вложенных вызовов parseBlocks,
+      // иначе код внутри карточки теряется.
+      let blocks = [];
       function parseMd(src) {
+        blocks = [];
         const esc = src.replace(/\r\n?/g, '\n').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         return parseBlocks(esc);
       }
@@ -2808,11 +2919,12 @@ Content
             '<a href="' + href + '"' + (href[0] === '#' ? '' : ' target="_blank" rel="noopener"') + '>' + text + '</a>');
       }
 
+      // card — карточка во всю ширину, half — в полширины; соседние half собираются в две колонки.
       function renderContainer(type, arg, body) {
-        if (type !== 'card') return parseBlocks(body);
+        if (type !== 'card' && type !== 'half') return parseBlocks(body);
         const [title, badge] = arg.split('|').map(x => x.trim());
         const b = badge ? '<span class="badge' + (/^[A-Z]+_$/.test(badge) ? ' badge-code' : '') + '">' + badge + '</span>' : '';
-        return '<section class="card">' + b + (title ? '<h3>' + inline(title) + '</h3>' : '') +
+        return '<section class="card' + (type === 'half' ? ' card-half' : '') + '">' + b + (title ? '<h3>' + inline(title) + '</h3>' : '') +
           '<div class="card-body">' + parseBlocks(body) + '</div></section>';
       }
 
@@ -2844,10 +2956,8 @@ Content
         return '<ul>' + items.map(i => li('', i)).join('') + '</ul>';
       }
 
-      // Принимает уже экранированный текст. Готовые блоки прячутся в плейсхолдеры,
-      // чтобы построчные правила ниже их не трогали.
+      // Принимает уже экранированный текст.
       function parseBlocks(html) {
-        const blocks = [];
         const hold = h => { blocks.push(h); return '\n\u0000' + (blocks.length - 1) + '\u0000\n'; };
 
         html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>

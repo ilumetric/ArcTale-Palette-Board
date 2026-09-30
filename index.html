@@ -1864,22 +1864,67 @@
 
 ## Префиксы {#prefixes}
 
-::: card Геометрия и ассеты {#mesh-prefixes}
+Основа — [рекомендации Epic Games](https://dev.epicgames.com/documentation/unreal-engine/recommended-asset-naming-conventions-in-unreal-engine-projects). Если типа ассета нет в списке, префикс подбирается по аналогии.
+
+::: card Геометрия и физика {#mesh-prefixes}
 - `SM_` Static Mesh — `SM_DepotProps_Paintings_01`
 - `SKM_` Skeletal Mesh — `SKM_Vegetation_PineTree_01`
-- `SKEL_` Skeleton — `SKEL_Vegetation_PineTree_01`
 - `PHYS_` Physics Asset — `PHYS_Vegetation_PineTree_01`
+- `PM_` Physical Material — `PM_Metal_01`
 :::
 
 ::: card Материалы {#material-prefixes}
 - `MM_` Master Material — `MM_Glass_01`
 - `M_` Material — `M_Glass_01`
 - `MI_` Material Instance — `MI_Glass_Frosted_01`
+- `PPM_` Post Process Material — `PPM_Outline_01`
 :::
 
 ::: card Текстуры и графы {#texture-prefixes}
 - `T_` Texture — `T_DepotProps_Paintings_D_01`
+- `HDR_` HDRI — `HDR_Overcast_01`
 - `PVE_` PVE Graph — `PVE_Vegetation_PineTree_01`
+:::
+
+::: card Анимация {#anim-prefixes}
+- `SKEL_` Skeleton — `SKEL_Vegetation_PineTree_01`
+- `Rig_` Control Rig
+- `IK_` IK Rig — `IK_Trickster`
+- `RTG_` IK Retargeter
+- `AS_` Animation Sequence
+- `AM_` Animation Montage
+- `BS_` Blend Space
+- `ABP_` Animation Blueprint
+- `LS_` Level Sequence
+- `EDIT_` Sequencer Edits
+:::
+
+::: card Блюпринты и данные {#blueprint-prefixes}
+- `BP_` Blueprint
+- `AC_` Actor Component
+- `BI_` Blueprint Interface
+- `WBP_` Widget Blueprint
+- `DT_` Data Table
+- `CT_` Curve Table
+- `E_` Enum
+- `F_` Structure
+:::
+
+::: card Эффекты {#fx-prefixes}
+- `FXS_` Niagara System
+- `FXE_` Niagara Emitter
+- `FXF_` Niagara Function
+:::
+
+::: card Медиа и прочее {#other-prefixes}
+- `MS_` Media Source
+- `MO_` Media Output
+- `MP_` Media Player
+- `MPR_` Media Profile
+- `NDC_` nDisplay Configuration
+- `OCIO_` OCIO Profile
+- `SNAP_` Level Snapshots
+- `RCP_` Remote Control Preset
 :::
 
 ## Шаблоны имён {#templates}

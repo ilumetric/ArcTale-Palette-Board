@@ -2078,8 +2078,8 @@ Content
         Creature — существа: Creature/<Name>
           Shared
       Environments
-        Buildings
         Shared — общее окружение: террейн, вода, небо
+          ConcreteModule — модульный набор
         <Theme> — окружение конкретной локации
       Vegetation — растительность
         Shared — общая растительность
@@ -2112,14 +2112,14 @@ Content
 ```
 
 > [!NOTE] Множественное число
-> `Characters`, `Environments`, `Props`, `Buildings` созданы по старому правилу. Новые папки называются в единственном числе. `Ram`, `Module`, `Weapon` и `Vehicle` пока не созданы — появятся вместе с контентом.
+> `Characters`, `Environments`, `Props` созданы по старому правилу. Новые папки называются в единственном числе. `Ram`, `Module`, `Weapon` и `Vehicle` пока не созданы — появятся вместе с контентом.
 
 ::: half Characters {#characters}
 Всё, что так или иначе персонажка, лежит здесь, а не в корне: MetaHuman, скелетал меши, скелеты, анимации. Люди — в `Human/<Name>`, второстепенные — в `Human/Other`, общий риг людей — в `Human/Shared`. Существа от зверей до боссов — в `Creature/<Name>`.
 :::
 
 ::: half Environments {#environments}
-Аутдоры, здания. Общее окружение — в `Shared`, окружение конкретной локации — в её теме.
+Аутдоры, здания, модульные наборы. Общее окружение — в `Shared`, окружение конкретной локации — в её теме. Модульный набор — своя папка: `Shared/ConcreteModule`.
 :::
 
 ::: half Vegetation {#vegetation}

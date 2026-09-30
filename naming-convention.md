@@ -16,8 +16,6 @@
 
 ## Префиксы {#prefixes}
 
-Основа — [рекомендации Epic Games](https://dev.epicgames.com/documentation/unreal-engine/recommended-asset-naming-conventions-in-unreal-engine-projects). Если типа ассета нет в списке, префикс подбирается по аналогии.
-
 ::: card Геометрия и физика {#mesh-prefixes}
 - `SM_` Static Mesh — `SM_DepotProps_Paintings_01`
 - `SKM_` Skeletal Mesh — `SKM_Vegetation_PineTree_01`
@@ -41,7 +39,7 @@
 ::: card Анимация {#anim-prefixes}
 - `SKEL_` Skeleton — `SKEL_Vegetation_PineTree_01`
 - `Rig_` Control Rig
-- `IK_` IK Rig — `IK_Trickster`
+- `IK_` IK Rig — `IK_Character_Hero_01`
 - `RTG_` IK Retargeter
 - `AS_` Animation Sequence
 - `AM_` Animation Montage

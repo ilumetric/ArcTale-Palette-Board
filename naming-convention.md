@@ -3,7 +3,7 @@
 ::: card Имя повторяет путь {#name-from-path} | Правило двух папок
 Путь в контенте и имя ассета согласованы: имя собирается из **двух последних смысловых папок** пути и, если нужно, собственного имени объекта.
 
-`Art\Props\Depot\Generator` → `SM_Depot_Generator_Body_01`
+`Art\Prop\Depot\Generator` → `SM_Depot_Generator_Body_01`
 
 `Art\Train\Frame` → `SM_Train_Frame_01`
 

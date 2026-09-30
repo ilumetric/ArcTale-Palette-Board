@@ -1,12 +1,27 @@
-## Корень проекта {#root}
+## Главное {#key-rules}
 
 ::: card Основная директория {#main-folder}
 `Content/ArcProject/Art` — арт-ассеты. Папки верхнего уровня внутри `Art` создаются только по согласованию с лидом.
 :::
 
+::: half Shared + Theme {#shared-theme} | Правило
+Общая схема для любого раздела, в том числе будущего:
+
+- `Shared` Ассеты, которые используются в нескольких местах
+- `<Theme>` Ассеты конкретной локации, набора, стиля или объекта
+
+Ассет, который нужен только одной теме, лежит в ней, а не в `Shared`. Новый раздел строится по той же схеме. `Shared` в имя ассета не входит: `Vegetation/Shared/Fern` → `SKM_Vegetation_Fern_01`.
+:::
+
+::: half Из тестовой папки — в рабочую {#move-to-working} | Обязательно
+После апрува **все** ассеты переносятся из личной тестовой папки в `Content/ArcProject/Art`: по структуре ниже и с именами по [Naming Convention](#naming).
+
+После переноса тестовую папку нужно почистить. Как переносить — в разделе [Тестовая и рабочая папки](#directories/workflow).
+:::
+
 ## Структура {#structure}
 
-```tree
+```tree groups
 Content
   ArcProject
     Art
@@ -27,6 +42,16 @@ Content
         <Theme> — окружение конкретной локации
       Vegetation — растительность
         Shared — общая растительность
+          Fern — пример: папка растения
+            Assemblies — ассемблы и граф PVE
+              SM_Assembly_Fern_01
+              SM_Assembly_Fern_02
+              PVE_Vegetation_Fern_01
+            Materials
+              MI_Vegetation_Fern_01
+            SKM_Vegetation_Fern_01
+            SKEL_Vegetation_Fern_01
+            PHYS_Vegetation_Fern_01
         <Theme> — растительность конкретной локации
       Props — мелкие и средние объекты
         Shared — общие пропсы
@@ -46,7 +71,7 @@ Content
 ```
 
 > [!NOTE] Множественное число
-> `Characters`, `Environments`, `Props`, `Buildings` созданы по старому правилу. Новые папки называются в единственном числе. Серые папки появятся вместе с контентом.
+> `Characters`, `Environments`, `Props`, `Buildings` созданы по старому правилу. Новые папки называются в единственном числе. `Ram`, `Module`, `Weapon` и `Vehicle` пока не созданы — появятся вместе с контентом.
 
 ::: half Characters {#characters}
 Всё, что так или иначе персонажка, лежит здесь, а не в корне: MetaHuman, скелетал меши, скелеты, анимации. Люди — в `Human/<Name>`, второстепенные — в `Human/Other`, общий риг людей — в `Human/Shared`. Существа от зверей до боссов — в `Creature/<Name>`.
@@ -57,7 +82,13 @@ Content
 :::
 
 ::: half Vegetation {#vegetation}
-Растительность лежит на уровне `Art`, рядом с `Props`, а не внутри `Environments`. Схема та же: общая — в `Shared`, конкретной локации — в теме.
+Каждое растение — своя папка: `Vegetation/Shared/<Name>` или `Vegetation/<Theme>/<Name>`.
+
+- В папке растения — `SKM_`, `SKEL_`, `PHYS_`.
+- `Materials` — материалы растения.
+- `Assemblies` — все ассемблы и граф `PVE_` (Procedural Vegetation Editor).
+
+Ассемблы не наследуют имя от пути: `SM_Assembly_<Name>_<Index>`.
 :::
 
 ::: half Props {#props}
@@ -75,21 +106,24 @@ Content
 ## Типовые папки {#typed-folders}
 
 ::: card Materials и Textures {#materials-textures}
-Единственные типовые папки — `Materials` и `Textures`. `Textures` лежит внутри `Materials`. Меши лежат прямо в папке объекта, папка `Meshes` не создаётся.
+Типовые папки — `Materials` и `Textures`, для растительности ещё `Assemblies`. `Textures` лежит внутри `Materials`. Меши лежат прямо в папке объекта, папка `Meshes` не создаётся.
 
 - Типовые папки — во множественном числе, так они отличаются от смысловых.
-- В имя ассета типовые папки **не входят**. Все остальные папки — смысловые, в единственном числе, и в имя входят.
+- В имя ассета типовые папки **не входят**, как и `Shared`. Все остальные папки — смысловые, в единственном числе, и в имя входят.
 - **Исключение — `Core`:** там `Textures` на одном уровне с `Materials`, потому что текстуры Core работают во внешних материалах, а не только в мастер-материалах Core.
+- **`Assemblies`** — типовая папка растительности, см. [Vegetation](#directories/vegetation).
 
 ```tree
 Props
-  Generator
-    SM_Props_Generator_01
-    Materials
-      MI_Props_Generator_01
-      Textures
-        T_Props_Generator_D_01
-        T_Props_Generator_ORM_01
+  Depot
+    Generator
+      Materials
+        Textures
+          T_Depot_Generator_Body_D_01
+          T_Depot_Generator_Body_ORM_01
+        MI_Depot_Generator_Body_01
+      SM_Depot_Generator_Body_01
+      SM_Depot_Generator_Panel_01
 ```
 :::
 
@@ -99,8 +133,8 @@ Props
 Уникальный материал персонажа — в папке персонажа. Общий для всех людей — в `Characters/Human/Shared`. Общий для всего арта — в `Core`. Зависимости только вниз: объект берёт из `Core`, `Core` не зависит от объекта.
 :::
 
-::: half Shared и темы {#shared-theme}
-В каждом разделе одна схема: `Shared` для общих ассетов и `<Theme>` для ассетов конкретной локации, набора или объекта. Ассет, который используется в одной теме, лежит в ней, а не в `Shared`.
+::: half Своя папка — от двух мешей {#object-folder}
+Объект получает свою папку, только если в нём больше одного меша: `Props/Depot/Generator` для корпуса и панели. Одиночный меш лежит прямо в папке темы: `Props/Depot/SM_Props_Depot_Lamp_01`.
 :::
 
 ::: half Папка появляется вместе с контентом {#folder-with-content}

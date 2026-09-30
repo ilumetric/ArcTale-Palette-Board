@@ -1023,7 +1023,8 @@
     /* Строки определений: ключ, описание, пример */
     .defs {
       display: grid;
-      grid-template-columns: minmax(112px, max-content) minmax(0, 1fr) auto
+      grid-template-columns: minmax(112px, max-content) minmax(0, 1fr) auto;
+      margin-bottom: 16px
     }
 
     .def-row {
@@ -1068,6 +1069,7 @@
 
     /* Дерево папок */
     .tree {
+      position: relative;
       margin: 0 0 16px;
       padding: 16px 18px;
       overflow-x: auto;
@@ -1126,6 +1128,30 @@
       color: var(--muted-2)
     }
 
+    .md-content .tree .tree-file .icon,
+    .md-content .tree .tree-file .tree-name {
+      color: var(--text-dim);
+      font-weight: 400
+    }
+
+    /* Цветные группы: иконки и направляющие наследуют цвет папки первого уровня */
+    .tree-group .icon {
+      color: var(--g)
+    }
+
+    .tree-group>.tree-item .tree-name {
+      color: var(--g)
+    }
+
+    .md-content .tree .tree-group ul {
+      border-left-color: color-mix(in srgb, var(--g) 35%, transparent)
+    }
+
+    .tree-group .tree-future .icon,
+    .tree-group>.tree-future .tree-name {
+      color: color-mix(in srgb, var(--g) 45%, transparent)
+    }
+
     /* Карточки в две колонки */
     .md-content .cols {
       display: grid;
@@ -1136,6 +1162,19 @@
 
     .md-content .cols .card {
       margin: 0
+    }
+
+    /* В узкой карточке пример уходит под описание */
+    .cols .defs {
+      grid-template-columns: minmax(64px, max-content) minmax(0, 1fr)
+    }
+
+    .cols .def-row {
+      row-gap: 4px
+    }
+
+    .cols .def-ex {
+      grid-column: 2
     }
 
     @media (max-width: 640px) {
@@ -1717,6 +1756,7 @@
   </script>
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <symbol id="i-palette" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5" /><circle cx="17.5" cy="10.5" r=".5" /><circle cx="8.5" cy="7.5" r=".5" /><circle cx="6.5" cy="12.5" r=".5" /><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.13a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.55-2.5 5.55-5.55C21.97 6.01 17.46 2 12 2z" /></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /></symbol>
     <symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></symbol>
     <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></symbol>
     <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" /></symbol>
@@ -1754,13 +1794,13 @@
             <svg class="icon"><use href="#i-palette" /></svg>
             <span class="nav-label">Palette Board</span><span class="nav-label-short">Palette</span>
           </a></li>
-        <li><a href="#naming" data-page="naming">
-            <svg class="icon"><use href="#i-book" /></svg>
-            <span class="nav-label">Naming Convention</span><span class="nav-label-short">Naming</span>
-          </a></li>
         <li><a href="#directories" data-page="directories">
             <svg class="icon"><use href="#i-folder" /></svg>
             <span class="nav-label">Directories</span><span class="nav-label-short">Folders</span>
+          </a></li>
+        <li><a href="#naming" data-page="naming">
+            <svg class="icon"><use href="#i-book" /></svg>
+            <span class="nav-label">Naming Convention</span><span class="nav-label-short">Naming</span>
           </a></li>
       </ul>
     </nav>
@@ -1871,56 +1911,70 @@
   <script id="md-fallback-naming" type="text/markdown">
 ## Общие принципы {#principles}
 
-::: card Базовые правила {#base-rules}
+::: card Имя повторяет путь {#name-from-path} | Правило двух папок
+Путь в контенте и имя ассета согласованы: имя собирается из **двух последних смысловых папок** пути и, если нужно, собственного имени объекта.
+
+`Art\Props\Depot\Generator` → `SM_Depot_Generator_Body_01`
+
+`Art\Train\Frame` → `SM_Train_Frame_01`
+
+`Art\Vegetation\Shared\Fern` → `SKM_Vegetation_Fern_01`
+
+- Служебные папки не считаются: `Shared`, `Materials`, `Textures`, `Assemblies`.
+- **Core** — исключение: папки в имя не входят, `MM_Glass_01`.
+- **Ассемблы** растительности — исключение: `SM_Assembly_<Name>_<Index>`.
+
+Структура папок — в [дереве на странице Directories](#directories/structure), правила именования папок — в [Directories](#directories/folder-naming).
+:::
+
+::: half Базовые правила {#base-rules}
 - Имя файла и путь в проекте выдаются вместе с ТЗ.
 - Разделитель только нижнее подчёркивание. Пробелы, тире и дефисы запрещены.
 - Индекс обязателен с первой версии: `_01`, `_02`, `_03`.
 :::
 
-::: card Имя повторяет путь {#name-from-path} | Правило двух папок
-Путь в контенте и имя ассета согласованы: имя собирается из **двух последних папок** пути и собственного имени объекта.
-
-`Content\ArcProject\Art\Environments\DepotProps\Art` → `SM_DepotProps_Art_Paintings_01`
-
-Структура папок и правила их именования описаны в разделе [Directories](#directories).
-:::
-
-::: card Зачем две папки в имени {#why-two-folders}
+::: half Зачем две папки в имени {#why-two-folders}
 Поиск в Content Browser идёт по имени ассета. Когда в имени есть префикс и папки, ассеты фильтруются сразу по типу и по месту: достаточно помнить, где лежит ассет, а не его точное имя.
 
-- `MI_DepotProps` Все инстансы материалов из `DepotProps`
-- `T_DepotProps_Art` Все текстуры из `DepotProps/Art`
-- `SM_DepotProps` Все меши из `DepotProps`
+- `MI_Depot` Все инстансы материалов из темы `Depot`
+- `T_Depot_Generator` Все текстуры генератора
+- `SM_Depot` Все меши из темы `Depot`
 
-Одной папки мало: имена вроде `Art` повторяются в разных разделах. Полный путь слишком длинный. Две папки однозначно указывают место и оставляют имя коротким.
+Одной папки мало: `Generator` может быть и в `Depot`, и в другой теме. Полный путь слишком длинный. Две папки однозначно указывают место и оставляют имя коротким.
 :::
 
 ## Префиксы {#prefixes}
 
-::: card Геометрия и физика {#mesh-prefixes}
-- `SM_` Static Mesh — `SM_DepotProps_Paintings_01`
-- `SKM_` Skeletal Mesh — `SKM_Vegetation_PineTree_01`
-- `PHYS_` Physics Asset — `PHYS_Vegetation_PineTree_01`
+::: half Геометрия и физика {#mesh-prefixes}
+- `SM_` Static Mesh — `SM_Depot_Generator_Body_01`
+- `SKM_` Skeletal Mesh — `SKM_Vegetation_Fern_01`
+- `PHYS_` Physics Asset — `PHYS_Vegetation_Fern_01`
 - `PM_` Physical Material — `PM_Metal_01`
 :::
 
-::: card Материалы {#material-prefixes}
+::: half Материалы {#material-prefixes}
 - `MM_` Master Material — `MM_Glass_01`
 - `M_` Material — `M_Glass_01`
 - `MI_` Material Instance — `MI_Glass_Frosted_01`
 - `PPM_` Post Process Material — `PPM_Outline_01`
 :::
 
-::: card Текстуры и графы {#texture-prefixes}
-- `T_` Texture — `T_DepotProps_Paintings_D_01`
+::: half Текстуры и графы {#texture-prefixes}
+- `T_` Texture — `T_Depot_Generator_Body_D_01`
 - `HDR_` HDRI — `HDR_Overcast_01`
-- `PVE_` PVE Graph — `PVE_Vegetation_PineTree_01`
+- `PVE_` PVE Graph — `PVE_Vegetation_Fern_01`
 :::
 
-::: card Анимация {#anim-prefixes}
-- `SKEL_` Skeleton — `SKEL_Vegetation_PineTree_01`
+::: half Эффекты {#fx-prefixes}
+- `FXS_` Niagara System
+- `FXE_` Niagara Emitter
+- `FXF_` Niagara Function
+:::
+
+::: half Анимация {#anim-prefixes}
+- `SKEL_` Skeleton — `SKEL_Vegetation_Fern_01`
 - `Rig_` Control Rig
-- `IK_` IK Rig — `IK_Character_Hero_01`
+- `IK_` IK Rig — `IK_Human_Hero_01`
 - `RTG_` IK Retargeter
 - `AS_` Animation Sequence
 - `AM_` Animation Montage
@@ -1930,7 +1984,7 @@
 - `EDIT_` Sequencer Edits
 :::
 
-::: card Блюпринты и данные {#blueprint-prefixes}
+::: half Блюпринты и данные {#blueprint-prefixes}
 - `BP_` Blueprint
 - `AC_` Actor Component
 - `BI_` Blueprint Interface
@@ -1939,12 +1993,6 @@
 - `CT_` Curve Table
 - `E_` Enum
 - `F_` Structure
-:::
-
-::: card Эффекты {#fx-prefixes}
-- `FXS_` Niagara System
-- `FXE_` Niagara Emitter
-- `FXF_` Niagara Function
 :::
 
 ::: card Медиа и прочее {#other-prefixes}
@@ -1960,24 +2008,24 @@
 
 ## Шаблоны имён {#templates}
 
-::: card Static Mesh | SM_
+::: half Static Mesh | SM_
 `SM_<DirectoryName>_<AssetName>_<Index>`
 
 Примеры
 
-- `SM_DepotProps_Art_Paintings_01`
-- `SM_Train_ArtifactFigurines_01`
+- `SM_Depot_Generator_Body_01`
+- `SM_Train_Frame_01`
 :::
 
-::: card Texture | T_
+::: half Texture | T_
 `T_<DirectoryName>_<AssetName>_<TextureType>_<Index>`
 
 Примеры
 
-- `T_DepotProps_Paintings_D_01`
-- `T_DepotProps_Paintings_ORM_01`
-- `T_DepotProps_Paintings_N_01`
-- `T_DepotProps_Paintings_M_01`
+- `T_Depot_Generator_Body_D_01`
+- `T_Depot_Generator_Body_ORM_01`
+- `T_Depot_Generator_Body_N_01`
+- `T_Depot_Generator_Body_M_01`
 
 > [!IMPORTANT]
 > Тип текстуры стоит перед индексом.
@@ -1991,15 +2039,30 @@
 :::
   </script>
   <script id="md-fallback-directories" type="text/markdown">
-## Корень проекта {#root}
+## Главное {#key-rules}
 
 ::: card Основная директория {#main-folder}
 `Content/ArcProject/Art` — арт-ассеты. Папки верхнего уровня внутри `Art` создаются только по согласованию с лидом.
 :::
 
+::: half Shared + Theme {#shared-theme} | Правило
+Общая схема для любого раздела, в том числе будущего:
+
+- `Shared` Ассеты, которые используются в нескольких местах
+- `<Theme>` Ассеты конкретной локации, набора, стиля или объекта
+
+Ассет, который нужен только одной теме, лежит в ней, а не в `Shared`. Новый раздел строится по той же схеме. `Shared` в имя ассета не входит: `Vegetation/Shared/Fern` → `SKM_Vegetation_Fern_01`.
+:::
+
+::: half Из тестовой папки — в рабочую {#move-to-working} | Обязательно
+После апрува **все** ассеты переносятся из личной тестовой папки в `Content/ArcProject/Art`: по структуре ниже и с именами по [Naming Convention](#naming).
+
+После переноса тестовую папку нужно почистить. Как переносить — в разделе [Тестовая и рабочая папки](#directories/workflow).
+:::
+
 ## Структура {#structure}
 
-```tree
+```tree groups
 Content
   ArcProject
     Art
@@ -2020,6 +2083,16 @@ Content
         <Theme> — окружение конкретной локации
       Vegetation — растительность
         Shared — общая растительность
+          Fern — пример: папка растения
+            Assemblies — ассемблы и граф PVE
+              SM_Assembly_Fern_01
+              SM_Assembly_Fern_02
+              PVE_Vegetation_Fern_01
+            Materials
+              MI_Vegetation_Fern_01
+            SKM_Vegetation_Fern_01
+            SKEL_Vegetation_Fern_01
+            PHYS_Vegetation_Fern_01
         <Theme> — растительность конкретной локации
       Props — мелкие и средние объекты
         Shared — общие пропсы
@@ -2039,7 +2112,7 @@ Content
 ```
 
 > [!NOTE] Множественное число
-> `Characters`, `Environments`, `Props`, `Buildings` созданы по старому правилу. Новые папки называются в единственном числе. Серые папки появятся вместе с контентом.
+> `Characters`, `Environments`, `Props`, `Buildings` созданы по старому правилу. Новые папки называются в единственном числе. `Ram`, `Module`, `Weapon` и `Vehicle` пока не созданы — появятся вместе с контентом.
 
 ::: half Characters {#characters}
 Всё, что так или иначе персонажка, лежит здесь, а не в корне: MetaHuman, скелетал меши, скелеты, анимации. Люди — в `Human/<Name>`, второстепенные — в `Human/Other`, общий риг людей — в `Human/Shared`. Существа от зверей до боссов — в `Creature/<Name>`.
@@ -2050,7 +2123,13 @@ Content
 :::
 
 ::: half Vegetation {#vegetation}
-Растительность лежит на уровне `Art`, рядом с `Props`, а не внутри `Environments`. Схема та же: общая — в `Shared`, конкретной локации — в теме.
+Каждое растение — своя папка: `Vegetation/Shared/<Name>` или `Vegetation/<Theme>/<Name>`.
+
+- В папке растения — `SKM_`, `SKEL_`, `PHYS_`.
+- `Materials` — материалы растения.
+- `Assemblies` — все ассемблы и граф `PVE_` (Procedural Vegetation Editor).
+
+Ассемблы не наследуют имя от пути: `SM_Assembly_<Name>_<Index>`.
 :::
 
 ::: half Props {#props}
@@ -2068,21 +2147,24 @@ Content
 ## Типовые папки {#typed-folders}
 
 ::: card Materials и Textures {#materials-textures}
-Единственные типовые папки — `Materials` и `Textures`. `Textures` лежит внутри `Materials`. Меши лежат прямо в папке объекта, папка `Meshes` не создаётся.
+Типовые папки — `Materials` и `Textures`, для растительности ещё `Assemblies`. `Textures` лежит внутри `Materials`. Меши лежат прямо в папке объекта, папка `Meshes` не создаётся.
 
 - Типовые папки — во множественном числе, так они отличаются от смысловых.
-- В имя ассета типовые папки **не входят**. Все остальные папки — смысловые, в единственном числе, и в имя входят.
+- В имя ассета типовые папки **не входят**, как и `Shared`. Все остальные папки — смысловые, в единственном числе, и в имя входят.
 - **Исключение — `Core`:** там `Textures` на одном уровне с `Materials`, потому что текстуры Core работают во внешних материалах, а не только в мастер-материалах Core.
+- **`Assemblies`** — типовая папка растительности, см. [Vegetation](#directories/vegetation).
 
 ```tree
 Props
-  Generator
-    SM_Props_Generator_01
-    Materials
-      MI_Props_Generator_01
-      Textures
-        T_Props_Generator_D_01
-        T_Props_Generator_ORM_01
+  Depot
+    Generator
+      Materials
+        Textures
+          T_Depot_Generator_Body_D_01
+          T_Depot_Generator_Body_ORM_01
+        MI_Depot_Generator_Body_01
+      SM_Depot_Generator_Body_01
+      SM_Depot_Generator_Panel_01
 ```
 :::
 
@@ -2092,8 +2174,8 @@ Props
 Уникальный материал персонажа — в папке персонажа. Общий для всех людей — в `Characters/Human/Shared`. Общий для всего арта — в `Core`. Зависимости только вниз: объект берёт из `Core`, `Core` не зависит от объекта.
 :::
 
-::: half Shared и темы {#shared-theme}
-В каждом разделе одна схема: `Shared` для общих ассетов и `<Theme>` для ассетов конкретной локации, набора или объекта. Ассет, который используется в одной теме, лежит в ней, а не в `Shared`.
+::: half Своя папка — от двух мешей {#object-folder}
+Объект получает свою папку, только если в нём больше одного меша: `Props/Depot/Generator` для корпуса и панели. Одиночный меш лежит прямо в папке темы: `Props/Depot/SM_Props_Depot_Lamp_01`.
 :::
 
 ::: half Папка появляется вместе с контентом {#folder-with-content}
@@ -2850,6 +2932,14 @@ Props
           const card = h.tagName === 'H3' && h.closest('.card');
           if (card) card.appendChild(linkButton(a.href, h.textContent));
         });
+        // Дерево вне карточки получает ссылку на заголовок раздела над ним.
+        container.querySelectorAll(':scope > .tree').forEach(tree => {
+          let h = tree.previousElementSibling;
+          while (h && !/^H[23]$/.test(h.tagName)) h = h.previousElementSibling;
+          if (!h) return;
+          const href = new URL('#' + page + '/' + h.id.slice(page.length + 1), location.href).href;
+          tree.appendChild(linkButton(href, h.textContent));
+        });
         if (!items.length) return;
         let ticking = false;
         const update = () => {
@@ -2870,7 +2960,9 @@ Props
       /* Мини-парсер markdown. Помимо базового синтаксиса понимает:
          ::: card Заголовок | Бейдж … :::     карточка
          > [!NOTE|TIP|IMPORTANT|WARNING|CAUTION]  выноска
-         ```tree … ```                         дерево папок, «Name?» — появится с контентом
+         ```tree … ```                         дерево папок, «Name?» — появится с контентом;
+         ```tree groups                        то же, группы первого уровня раскрашены;
+                                               имя с префиксом (SM_…) рисуется файлом
          строка `A_<Name>_<Index>`             шаблон имени
          строка `путь` → `имя`                 сопоставление
          - `KEY` Описание — `пример`           строки определений
@@ -2881,19 +2973,32 @@ Props
         warning: ['alert', 'Внимание'], caution: ['alert', 'Осторожно'],
       };
       // ```tree: два пробела отступа на уровень, описание после « — ».
-      function renderTree(src) {
-        let out = '', depth = -1;
-        src.split('\n').filter(l => l.trim()).forEach(l => {
-          const d = l.search(/\S/) >> 1;
+      // ```tree groups — папки первого уровня с несколькими соседями получают свой цвет,
+      // вложенные наследуют его.
+      const GROUP_COLORS = ['#60a5fa', '#f472b6', '#fb923c', '#4ade80', '#facc15', '#2dd4bf', '#c084fc', '#f87171'];
+      function renderTree(src, groups) {
+        const rows = src.split('\n').filter(l => l.trim()).map(l => {
           let [name, desc] = l.trim().split(' — ');
           const future = name.endsWith('?');
           if (future) name = name.slice(0, -1);
+          return { d: l.search(/\S/) >> 1, name, desc, future, file: /^[A-Z]{1,5}_/.test(name) };
+        });
+        let groupDepth = -1, g = 0;
+        if (groups) {
+          const count = {};
+          rows.forEach(r => count[r.d] = (count[r.d] || 0) + 1);
+          groupDepth = Math.min(...Object.keys(count).filter(k => count[k] > 1).map(Number));
+        }
+        let out = '', depth = -1;
+        rows.forEach(({ d, name, desc, future, file }) => {
           out += d > depth ? '<ul>'.repeat(d - depth) : '</li>' + '</ul></li>'.repeat(depth - d);
-          out += '<li><div class="tree-item' + (future ? ' tree-future' : '') + '">' + ICON('folder') + '<span class="tree-name">' + name + '</span>' +
+          const head = d === groupDepth;
+          out += '<li' + (head ? ' class="tree-group" style="--g:' + GROUP_COLORS[g++ % GROUP_COLORS.length] + '"' : '') + '>' +
+            '<div class="tree-item' + (future ? ' tree-future' : '') + (file ? ' tree-file' : '') + '">' + ICON(file ? 'file' : 'folder') + '<span class="tree-name">' + name + '</span>' +
             (desc ? '<span class="tree-desc">' + inline(desc) + '</span>' : '') + '</div>';
           depth = d;
         });
-        return '<div class="tree">' + out + '</li></ul>'.repeat(depth + 1) + '</div>';
+        return '<div class="tree' + (groups ? ' tree-grouped' : '') + '">' + out + '</li></ul>'.repeat(depth + 1) + '</div>';
       }
 
       const TOKEN_COLORS = { DirectoryName: 'blue', AssetName: 'green', TextureType: 'orange', Index: 'violet' };
@@ -2960,8 +3065,8 @@ Props
       function parseBlocks(html) {
         const hold = h => { blocks.push(h); return '\n\u0000' + (blocks.length - 1) + '\u0000\n'; };
 
-        html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>
-          hold(lang === 'tree' ? renderTree(code) :
+        html = html.replace(/```(\w*)([^\n]*)\n([\s\S]*?)```/g, (_, lang, opts, code) =>
+          hold(lang === 'tree' ? renderTree(code, /\bgroups\b/.test(opts)) :
             '<pre><code' + (lang ? ' class="lang-' + lang + '"' : '') + '>' + code.trimEnd() + '</code></pre>'));
         html = html.replace(/^::: *(\w+)(?: +(.*))?\n([\s\S]*?)\n:::[ \t]*$/gm, (_, type, arg, body) =>
           hold(renderContainer(type, (arg || '').trim(), body)));

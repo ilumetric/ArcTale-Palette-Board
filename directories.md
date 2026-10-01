@@ -26,7 +26,7 @@ Content
   ArcProject
     Art
       Core — общий тех-арт, ни от кого не зависит
-        Blueprints
+        Blueprints — визуальные блюпринты
         Materials — мастер-материалы, функции, инстансы
         Textures — маски, шумы, градиенты
       Character — всё, что так или иначе персонажка
@@ -106,12 +106,13 @@ Content
 ## Типовые папки {#typed-folders}
 
 ::: card Materials и Textures {#materials-textures}
-Типовые папки — `Materials` и `Textures`, для растительности ещё `Assemblies`. `Textures` лежит внутри `Materials`. Меши лежат прямо в папке объекта, папка `Meshes` не создаётся.
+Типовые папки — `Materials`, `Textures` и `Blueprints`, для растительности ещё `Assemblies`. `Textures` лежит внутри `Materials`. Меши лежат прямо в папке объекта, папка `Meshes` не создаётся.
 
 - Типовые папки — во множественном числе, так они отличаются от смысловых.
 - В имя ассета типовые папки **не входят**, как и `Shared`. Все остальные папки — смысловые, в единственном числе, и в имя входят.
 - **Исключение — `Core`:** там `Textures` на одном уровне с `Materials`, потому что текстуры Core работают во внешних материалах, а не только в мастер-материалах Core.
 - **`Assemblies`** — типовая папка растительности, см. [Vegetation](#directories/vegetation).
+- **`Blueprints`** — визуальные блюпринты объекта или раздела, например `Core/Blueprints`.
 
 ```tree
 Prop

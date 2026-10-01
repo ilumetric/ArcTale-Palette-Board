@@ -9,7 +9,7 @@
 
 `Art\Vegetation\Shared\Fern` → `SKM_Vegetation_Fern_01`
 
-- Служебные папки не считаются: `Shared`, `Materials`, `Textures`, `Assemblies`.
+- Служебные папки не считаются: `Shared`, `Materials`, `Textures`, `Blueprints`, `Assemblies`.
 - **Core** — исключение: папки в имя не входят, `MM_Glass_01`.
 - **Ассемблы** растительности — исключение: `SM_Assembly_<Name>_<Index>`.
 

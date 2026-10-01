@@ -12,6 +12,7 @@
 - Служебные папки не считаются: `Shared`, `Materials`, `Textures`, `Blueprints`, `Assemblies`.
 - **Core** — исключение: папки в имя не входят, `MM_Glass_01`.
 - **Ассемблы** растительности — исключение: `SM_Assembly_<Name>_<Index>`.
+- **Растительность из PVE** — исключение, см. [ниже](#naming/pve-exception).
 
 Структура папок — в [дереве на странице Directories](#directories/structure), правила именования папок — в [Directories](#directories/folder-naming).
 :::
@@ -32,12 +33,19 @@
 Одной папки мало: `Generator` может быть и в `Depot`, и в другой теме. Полный путь слишком длинный. Две папки однозначно указывают место и оставляют имя коротким.
 :::
 
+::: card Растительность из PVE {#pve-exception} | Исключение
+Имена ассетов, которые создаёт PVE, захардкожены в плагине. **Не переименовывать их вручную:** при следующем экспорте PVE не найдёт ассет и создаст дубль.
+
+- Имя задаётся только в ноде Export, в поле **Mesh Name**: `SKM_Vegetation_Fern_01`.
+- Скелет, физику и части ассемблов PVE называет сам: `SKM_Vegetation_Fern_01_Skeleton`, `SK_SM_Assembly_Fern_01`.
+:::
+
 ## Префиксы {#prefixes}
 
 ::: half Геометрия и физика {#mesh-prefixes}
 - `SM_` Static Mesh — `SM_Depot_Generator_Body_01`
-- `SKM_` Skeletal Mesh — `SKM_Vegetation_Fern_01`
-- `PHYS_` Physics Asset — `PHYS_Vegetation_Fern_01`
+- `SKM_` Skeletal Mesh — `SKM_Human_Hero_01`
+- `PHYS_` Physics Asset — `PHYS_Human_Hero_01`
 - `PM_` Physical Material — `PM_Metal_01`
 :::
 
@@ -61,7 +69,7 @@
 :::
 
 ::: half Анимация {#anim-prefixes}
-- `SKEL_` Skeleton — `SKEL_Vegetation_Fern_01`
+- `SKEL_` Skeleton — `SKEL_Human_Hero_01`
 - `Rig_` Control Rig
 - `IK_` IK Rig — `IK_Human_Hero_01`
 - `RTG_` IK Retargeter
@@ -97,7 +105,7 @@
 
 ## Шаблоны имён {#templates}
 
-::: half Static Mesh | SM_
+::: card Static Mesh | SM_
 `SM_<DirectoryName>_<AssetName>_<Index>`
 
 Примеры
@@ -106,7 +114,7 @@
 - `SM_Train_Frame_01`
 :::
 
-::: half Texture | T_
+::: card Texture | T_
 `T_<DirectoryName>_<AssetName>_<TextureType>_<Index>`
 
 Примеры

@@ -45,13 +45,14 @@ Content
           Fern — пример: папка растения
             Assemblies — ассемблы и граф PVE
               SM_Assembly_Fern_01
-              SM_Assembly_Fern_02
+              SKM_SM_Assembly_Fern_01
+              SK_SM_Assembly_Fern_01
               PVE_Vegetation_Fern_01
             Materials
               MI_Vegetation_Fern_01
             SKM_Vegetation_Fern_01
-            SKEL_Vegetation_Fern_01
-            PHYS_Vegetation_Fern_01
+            SKM_Vegetation_Fern_01_Skeleton
+            SKM_Vegetation_Fern_01_Physics
         <Theme> — растительность конкретной локации
       Prop — мелкие и средние объекты
         Shared — общие пропсы
@@ -84,7 +85,7 @@ Content
 ::: half Vegetation {#vegetation}
 Каждое растение — своя папка: `Vegetation/Shared/<Name>` или `Vegetation/<Theme>/<Name>`.
 
-- В папке растения — `SKM_`, `SKEL_`, `PHYS_`.
+- В папке растения — меш, скелет и физика из PVE. Их имена задаёт PVE, см. [исключение](#naming/pve-exception).
 - `Materials` — материалы растения.
 - `Assemblies` — все ассемблы и граф `PVE_` (Procedural Vegetation Editor).
 

@@ -2135,10 +2135,54 @@
       background: var(--stroke-strong)
     }
 
+    .pk-size {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 16px 0 0 16px;
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    .pk-size select {
+      min-width: 0;
+      max-width: 100%;
+      height: 32px;
+      padding: 0 30px 0 12px;
+      border: 1px solid var(--stroke-strong);
+      border-radius: 999px;
+      appearance: none;
+      background: var(--field) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;
+      color: var(--text);
+      font: 13px var(--mono);
+      text-overflow: ellipsis;
+      cursor: pointer
+    }
+
+    .pk-size select:focus-visible {
+      outline: 0;
+      border-color: var(--ring)
+    }
+
+    #pkSize {
+      flex: 1 1 180px
+    }
+
+    .pk-custom {
+      display: flex;
+      gap: 6px;
+      align-items: center
+    }
+
+    .pk-custom[hidden] {
+      display: none
+    }
+
     .pk-save {
       display: flex;
       gap: 8px;
-      margin: 16px 0 0 16px
+      margin: 12px 0 0 16px
     }
 
     .pk-name {
@@ -2412,6 +2456,15 @@
                     <button type="button" data-view="3" title="Сохранить только A в оттенках серого">A</button>
                   </div>
                 </div>
+              </div>
+              <div class="pk-size">
+                <span>Размер</span>
+                <select id="pkSize" aria-label="Размер результата"></select>
+                <span class="pk-custom" id="pkCustom" hidden>
+                  <select id="pkW" aria-label="Ширина"></select>
+                  <span>×</span>
+                  <select id="pkH" aria-label="Высота"></select>
+                </span>
               </div>
               <div class="pk-save">
                 <label class="pk-name"><input id="pkName" value="T_Packed_01" spellcheck="false" aria-label="Имя файла"><span id="pkExt">.tga</span></label>
@@ -3650,6 +3703,9 @@ Prop
       const fileInput = $('#pkFile'), outSocks = $('#pkOutSocks'), preview = $('#pkPreview');
       const emptyEl = $('#pkEmpty'), nameInput = $('#pkName'), downloadBtn = $('#pkDownload'), info = $('#pkInfo');
       const INFO_TEXT = info.textContent;
+      const sizeSel = $('#pkSize'), customEl = $('#pkCustom'), wSel = $('#pkW'), hSel = $('#pkH');
+      const POW2 = [128, 256, 512, 1024, 2048, 4096];
+      let sizeMode = 'auto', customW = 2048, customH = 2048;   // auto | in:<id> | custom
 
       let inputs = [];                       // { id, name, w, h, data, el }
       let nextId = 1;
@@ -3730,20 +3786,41 @@ Prop
       }
 
       /* ── Масштаб и миниатюры ── */
+      // Веса одной оси: при уменьшении — доля площади исходных пикселей, при увеличении — линейные.
+      function axisWeights(sn, dn) {
+        const out = [];
+        for (let d = 0; d < dn; d++) {
+          const w = [];
+          if (dn < sn) {
+            const a = d * sn / dn, b = (d + 1) * sn / dn;
+            for (let i = Math.floor(a); i < Math.ceil(b); i++) w.push([i, (Math.min(b, i + 1) - Math.max(a, i)) * dn / sn]);
+          } else {
+            const f = Math.min(sn - 1, Math.max(0, (d + .5) * sn / dn - .5)), i0 = Math.floor(f), t = f - i0;
+            w.push([i0, 1 - t]);
+            if (t > 0) w.push([i0 + 1, t]);
+          }
+          out.push(w);
+        }
+        return out;
+      }
+
       function resample(src, sw, sh, dw, dh) {
         if (sw === dw && sh === dh) return src;
-        const dst = new Uint8ClampedArray(dw * dh * 4);
-        for (let y = 0; y < dh; y++) {
-          const fy = Math.max(0, (y + .5) * sh / dh - .5), y0 = Math.floor(fy), y1 = Math.min(sh - 1, y0 + 1), ty = fy - y0;
+        const wx = axisWeights(sw, dw), wy = axisWeights(sh, dh);
+        const tmp = new Float32Array(dw * sh * 4);              // сначала по горизонтали
+        for (let y = 0; y < sh; y++)
           for (let x = 0; x < dw; x++) {
-            const fx = Math.max(0, (x + .5) * sw / dw - .5), x0 = Math.floor(fx), x1 = Math.min(sw - 1, x0 + 1), tx = fx - x0;
-            const a = (y0 * sw + x0) * 4, b = (y0 * sw + x1) * 4, c = (y1 * sw + x0) * 4, d = (y1 * sw + x1) * 4, o = (y * dw + x) * 4;
-            for (let k = 0; k < 4; k++) {
-              const top = src[a + k] + (src[b + k] - src[a + k]) * tx;
-              dst[o + k] = top + (src[c + k] + (src[d + k] - src[c + k]) * tx - top) * ty;
-            }
+            const o = (y * dw + x) * 4;
+            for (const [i, k] of wx[x]) { const a = (y * sw + i) * 4; tmp[o] += src[a] * k; tmp[o + 1] += src[a + 1] * k; tmp[o + 2] += src[a + 2] * k; tmp[o + 3] += src[a + 3] * k; }
           }
-        }
+        const dst = new Uint8ClampedArray(dw * dh * 4);          // потом по вертикали
+        for (let y = 0; y < dh; y++)
+          for (let x = 0; x < dw; x++) {
+            const o = (y * dw + x) * 4;
+            let r = 0, g = 0, b = 0, al = 0;
+            for (const [i, k] of wy[y]) { const a = (i * dw + x) * 4; r += tmp[a] * k; g += tmp[a + 1] * k; b += tmp[a + 2] * k; al += tmp[a + 3] * k; }
+            dst[o] = Math.round(r); dst[o + 1] = Math.round(g); dst[o + 2] = Math.round(b); dst[o + 3] = Math.round(al);
+          }
         return dst;
       }
 
@@ -3975,12 +4052,30 @@ Prop
         return input.cache[key] || (input.cache[key] = resample(input.data, input.w, input.h, W, H));
       }
 
+      function outSize(active) {
+        if (sizeMode === 'custom') return { W: customW, H: customH };
+        const src = sizeMode.startsWith('in:') && inputs.find(i => 'in:' + i.id === sizeMode);
+        if (src) return { W: src.w, H: src.h };
+        const big = active.reduce((a, b) => b.w * b.h > a.w * a.h ? b : a);
+        return { W: big.w, H: big.h };
+      }
+
+      // Список «Размер»: авто, размер любого из входов или свой.
+      function syncSize() {
+        if (sizeMode.startsWith('in:') && !inputs.some(i => 'in:' + i.id === sizeMode)) sizeMode = 'auto';
+        const opts = [['auto', 'Авто — по наибольшему входу']]
+          .concat(inputs.map(i => ['in:' + i.id, i.name + ' · ' + i.w + ' × ' + i.h]))
+          .concat([['custom', 'Свой размер']]);
+        sizeSel.replaceChildren(...opts.map(([v, t]) => { const o = el('option'); o.value = v; o.textContent = t; return o; }));
+        sizeSel.value = sizeMode;
+        customEl.hidden = sizeMode !== 'custom';
+      }
+
       function compose() {
         const used = links.map((l, ch) => l && (ch < 3 || alphaOn) ? inputs.find(i => i.id === l.id) : null);
         const active = used.filter(Boolean);
         if (!active.length) return null;
-        const big = active.reduce((a, b) => b.w * b.h > a.w * a.h ? b : a);
-        const W = big.w, H = big.h, n = W * H;
+        const { W, H } = outSize(active), n = W * H;
         const data = new Uint8ClampedArray(n * 4);
         for (let ch = 0; ch < 4; ch++) {
           const inp = used[ch], inv = invert[ch];
@@ -3993,7 +4088,8 @@ Prop
           }
         }
         const mixed = active.some(i => i.w !== W || i.h !== H);
-        return { W, H, data, alpha: !!used[3], mixed };
+        const stretched = active.some(i => Math.abs(i.w / i.h - W / H) > 1e-3);
+        return { W, H, data, alpha: !!used[3], mixed, stretched };
       }
 
       function renderPreview() {
@@ -4017,6 +4113,7 @@ Prop
           inputsEl.querySelectorAll('.pk-sock').forEach(s =>
             s.classList.toggle('is-linked', links.some(l => l && l.id === s.dataset.id && l.ch === +s.dataset.ch)));
           drop.hidden = inputs.length >= MAX_INPUTS;
+          syncSize();
           out = compose();
           downloadBtn.disabled = !out;
           // A без альфы — сплошной белый, сохранять нечего
@@ -4037,6 +4134,20 @@ Prop
         $('#pkFormat').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
       });
 
+      [wSel, hSel].forEach(sel => sel.replaceChildren(...POW2.map(v => { const o = el('option'); o.value = v; o.textContent = v; return o; })));
+      sizeSel.addEventListener('change', () => {
+        if (sizeSel.value === 'custom' && sizeMode !== 'custom' && out) {
+          // свой размер начинается с текущего, округлённого до степени двойки
+          const near = v => POW2.reduce((a, b) => Math.abs(Math.log2(b / v)) < Math.abs(Math.log2(a / v)) ? b : a);
+          customW = near(out.W); customH = near(out.H);
+        }
+        sizeMode = sizeSel.value;
+        wSel.value = customW; hSel.value = customH;
+        update();
+      });
+      wSel.addEventListener('change', () => { customW = +wSel.value; update(); });
+      hSel.addEventListener('change', () => { customH = +hSel.value; update(); });
+
       // Чип R/G/B/A — сохранить один канал в оттенках серого.
       const chips = $('#pkChips'), chipA = chips.querySelector('[data-view="3"]'), dlLabel = $('#pkDownloadLabel');
       function showMode() {
@@ -4045,7 +4156,7 @@ Prop
         info.textContent = !out ? INFO_TEXT
           : out.W + ' × ' + out.H + ', ' +
             (one ? 'только ' + CH[+view] + ' в оттенках серого' : out.alpha ? 'RGBA' : 'RGB без альфы') +
-            (out.mixed ? '. Размеры входов разные, приведены к большему.' : '.') + ' ' + INFO_TEXT;
+            (out.stretched ? '. Пропорции входов другие — они растянуты.' : out.mixed ? '. Входы приведены к этому размеру.' : '.') + ' ' + INFO_TEXT;
       }
       function setView(v) {
         view = v;

@@ -2122,6 +2122,19 @@
       color: var(--text)
     }
 
+    .pk-chips button:disabled {
+      opacity: .35;
+      cursor: default
+    }
+
+    .pk-chips-sep {
+      align-self: center;
+      width: 1px;
+      height: 14px;
+      margin: 0 4px;
+      background: var(--stroke-strong)
+    }
+
     .pk-save {
       display: flex;
       gap: 8px;
@@ -2390,12 +2403,13 @@
                     <canvas id="pkPreview" width="1" height="1"></canvas>
                     <p class="pk-empty" id="pkEmpty">Подключите каналы</p>
                   </div>
-                  <div class="pk-chips" id="pkChips" role="group" aria-label="Просмотр канала">
-                    <button type="button" data-view="rgb" aria-pressed="true">RGB</button>
-                    <button type="button" data-view="0">R</button>
-                    <button type="button" data-view="1">G</button>
-                    <button type="button" data-view="2">B</button>
-                    <button type="button" data-view="3">A</button>
+                  <div class="pk-chips" id="pkChips" role="group" aria-label="Что сохранить">
+                    <button type="button" data-view="rgb" aria-pressed="true" title="Сохранить все каналы">RGB</button>
+                    <span class="pk-chips-sep" aria-hidden="true"></span>
+                    <button type="button" data-view="0" title="Сохранить только R в оттенках серого">R</button>
+                    <button type="button" data-view="1" title="Сохранить только G в оттенках серого">G</button>
+                    <button type="button" data-view="2" title="Сохранить только B в оттенках серого">B</button>
+                    <button type="button" data-view="3" title="Сохранить только A в оттенках серого">A</button>
                   </div>
                 </div>
               </div>
@@ -2406,7 +2420,7 @@
                   <button type="button" data-format="png">PNG</button>
                 </div>
                 <button type="button" class="btn btn-primary" id="pkDownload" disabled>
-                  <svg class="icon"><use href="#i-download" /></svg><span>Скачать</span>
+                  <svg class="icon"><use href="#i-download" /></svg><span id="pkDownloadLabel">Скачать</span>
                 </button>
               </div>
               <p class="pk-info" id="pkInfo">В Unreal снимите sRGB и выберите Compression Settings: Masks (no sRGB).</p>
@@ -4005,10 +4019,10 @@ Prop
           drop.hidden = inputs.length >= MAX_INPUTS;
           out = compose();
           downloadBtn.disabled = !out;
-          info.textContent = out
-            ? out.W + ' × ' + out.H + ', ' + (out.alpha ? 'RGBA' : 'RGB без альфы') +
-              (out.mixed ? '. Размеры входов разные, приведены к большему.' : '.') + ' ' + INFO_TEXT
-            : INFO_TEXT;
+          // A без альфы — сплошной белый, сохранять нечего
+          chipA.disabled = !out || !out.alpha;
+          if (view === '3' && chipA.disabled) setView('rgb');
+          else showMode();
           renderPreview();
           drawWires();
         });
@@ -4023,13 +4037,35 @@ Prop
         $('#pkFormat').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
       });
 
-      $('#pkChips').addEventListener('click', e => {
-        const b = e.target.closest('button');
-        if (!b) return;
-        view = b.dataset.view;
-        $('#pkChips').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+      // Чип R/G/B/A — сохранить один канал в оттенках серого.
+      const chips = $('#pkChips'), chipA = chips.querySelector('[data-view="3"]'), dlLabel = $('#pkDownloadLabel');
+      function showMode() {
+        const one = view !== 'rgb';
+        dlLabel.textContent = one ? 'Скачать ' + CH[+view] : 'Скачать';
+        info.textContent = !out ? INFO_TEXT
+          : out.W + ' × ' + out.H + ', ' +
+            (one ? 'только ' + CH[+view] + ' в оттенках серого' : out.alpha ? 'RGBA' : 'RGB без альфы') +
+            (out.mixed ? '. Размеры входов разные, приведены к большему.' : '.') + ' ' + INFO_TEXT;
+      }
+      function setView(v) {
+        view = v;
+        chips.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x.dataset.view === v));
+        showMode();
         renderPreview();
+      }
+      chips.addEventListener('click', e => {
+        const b = e.target.closest('button');
+        if (b && !b.disabled) setView(b.dataset.view);
       });
+
+      // Пиксели для записи: 1 байт (серый), 3 (RGB) или 4 (RGBA) на пиксель.
+      function pixels() {
+        const n = out.W * out.H, one = view !== 'rgb';
+        const ch = one ? 1 : out.alpha ? 4 : 3, px = new Uint8Array(n * ch);
+        if (one) { const c = +view; for (let i = 0; i < n; i++) px[i] = out.data[i * 4 + c]; }
+        else for (let i = 0, o = 0; i < n; i++) for (let k = 0; k < ch; k++) px[o++] = out.data[i * 4 + k];
+        return { W: out.W, H: out.H, px, ch };
+      }
 
       /* ── PNG: RGB или RGBA, без премультипликации ── */
       const CRC = new Uint32Array(256).map((_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
@@ -4043,42 +4079,39 @@ Prop
         v.setUint32(8 + body.length, (c ^ 0xFFFFFFFF) >>> 0);
         return b;
       }
-      async function encodePNG({ W, H, data, alpha }) {
-        const ch = alpha ? 4 : 3, stride = W * ch, raw = new Uint8Array((stride + 1) * H);
+      async function encodePNG({ W, H, px, ch }) {
+        const stride = W * ch, raw = new Uint8Array((stride + 1) * H);
         for (let y = 0, o = 0; y < H; y++) {
           raw[o++] = 1;                         // фильтр Sub: разница с соседом слева
-          for (let x = 0; x < W; x++) {
-            const i = (y * W + x) * 4;
-            for (let k = 0; k < ch; k++) raw[o++] = data[i + k] - (x ? data[i - 4 + k] : 0);
-          }
+          for (let x = 0, i = y * stride; x < stride; x++, i++) raw[o++] = px[i] - (x >= ch ? px[i - ch] : 0);
         }
         const z = new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate'))).arrayBuffer());
         const ihdr = new Uint8Array(13), v = new DataView(ihdr.buffer);
         v.setUint32(0, W); v.setUint32(4, H);
-        ihdr.set([8, alpha ? 6 : 2, 0, 0, 0], 8);
+        ihdr.set([8, { 1: 0, 3: 2, 4: 6 }[ch], 0, 0, 0], 8);
         return new Blob([new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', z), chunk('IEND', new Uint8Array(0))], { type: 'image/png' });
       }
 
-      function encodeTGA({ W, H, data, alpha }) {
-        const ps = alpha ? 4 : 3;
-        const buf = new Uint8Array(18 + H * (W * (ps + 1)));   // запас на худший случай RLE
-        buf[2] = 10;                                             // truecolor + RLE
+      function encodeTGA({ W, H, px, ch }) {
+        const buf = new Uint8Array(18 + H * (W * (ch + 1)));   // запас на худший случай RLE
+        buf[2] = ch === 1 ? 11 : 10;                             // серый или truecolor, RLE
         buf[12] = W & 255; buf[13] = W >> 8; buf[14] = H & 255; buf[15] = H >> 8;
-        buf[16] = ps * 8; buf[17] = alpha ? 8 : 0;               // начало координат снизу
+        buf[16] = ch * 8; buf[17] = ch === 4 ? 8 : 0;            // начало координат снизу
         let o = 18;
-        const same = (a, b) => data[a] === data[b] && data[a + 1] === data[b + 1] && data[a + 2] === data[b + 2] && (!alpha || data[a + 3] === data[b + 3]);
-        const put = i => { buf[o++] = data[i + 2]; buf[o++] = data[i + 1]; buf[o++] = data[i]; if (alpha) buf[o++] = data[i + 3]; };
+        const same = (a, b) => { for (let k = 0; k < ch; k++) if (px[a + k] !== px[b + k]) return false; return true; };
+        const put = ch === 1 ? i => { buf[o++] = px[i]; }
+          : i => { buf[o++] = px[i + 2]; buf[o++] = px[i + 1]; buf[o++] = px[i]; if (ch === 4) buf[o++] = px[i + 3]; };
         for (let y = H - 1; y >= 0; y--) {
-          const row = y * W * 4;
+          const row = y * W * ch;
           let x = 0;
           while (x < W) {
             let run = 1;
-            while (x + run < W && run < 128 && same(row + x * 4, row + (x + run) * 4)) run++;
-            if (run > 1) { buf[o++] = 0x80 | (run - 1); put(row + x * 4); x += run; continue; }
+            while (x + run < W && run < 128 && same(row + x * ch, row + (x + run) * ch)) run++;
+            if (run > 1) { buf[o++] = 0x80 | (run - 1); put(row + x * ch); x += run; continue; }
             let n = 1;                                           // сырые пиксели до следующего повтора
-            while (x + n < W && n < 128 && !(x + n + 1 < W && same(row + (x + n) * 4, row + (x + n + 1) * 4))) n++;
+            while (x + n < W && n < 128 && !(x + n + 1 < W && same(row + (x + n) * ch, row + (x + n + 1) * ch))) n++;
             buf[o++] = n - 1;
-            for (let k = 0; k < n; k++) put(row + (x + k) * 4);
+            for (let k = 0; k < n; k++) put(row + (x + k) * ch);
             x += n;
           }
         }
@@ -4090,11 +4123,15 @@ Prop
         downloadBtn.disabled = true;
         try {
           let blob;
-          if (format === 'tga') blob = encodeTGA(out);
-          else if ('CompressionStream' in window) blob = await encodePNG(out);
+          const img = pixels();
+          if (format === 'tga') blob = encodeTGA(img);
+          else if ('CompressionStream' in window) blob = await encodePNG(img);
           else {
             const c = Object.assign(document.createElement('canvas'), { width: out.W, height: out.H });
-            c.getContext('2d').putImageData(new ImageData(out.data, out.W, out.H), 0, 0);
+            const d = new Uint8ClampedArray(out.W * out.H * 4);
+            for (let i = 0, n = out.W * out.H; i < n; i++)
+              for (let k = 0; k < 4; k++) d[i * 4 + k] = k === 3 ? (img.ch === 4 ? img.px[i * 4 + 3] : 255) : img.px[i * img.ch + (img.ch === 1 ? 0 : k)];
+            c.getContext('2d').putImageData(new ImageData(d, out.W, out.H), 0, 0);
             blob = await new Promise(r => c.toBlob(r, 'image/png'));
           }
           const name = (nameInput.value.trim() || 'T_Packed_01').replace(/\.(png|tga)$/i, '') + '.' + format;

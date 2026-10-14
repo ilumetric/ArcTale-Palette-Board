@@ -1,0 +1,376 @@
+# ArcTale: правила арт-контента (полная версия)
+
+> Все правила с https://ilumetric.github.io/ArcTale-Palette-Board/ одним файлом: структура папок, именование ассетов, индексы Custom Primitive Data. Проект на Unreal Engine.
+
+Файл собран из исходных Markdown-страниц сайта, не редактируйте его вручную. Краткий индекс — https://ilumetric.github.io/ArcTale-Palette-Board/llms.txt.
+
+Формат: `{#id}` после заголовка — якорь, на сайте это `https://ilumetric.github.io/ArcTale-Palette-Board/#<страница>/<id>`; ссылки вида `#naming/pve-exception` ведут туда же. `::: card` / `::: half` … `:::` — карточка с правилом, `| Метка` после заголовка — бейдж. В блоке ```tree вложенность задаётся отступом, `— текст` — пояснение, `?` — папка ещё не создана. `- (-) …` — запрещённый вариант.
+
+---
+
+# Directories
+
+Страница: https://ilumetric.github.io/ArcTale-Palette-Board/#directories · исходник: https://ilumetric.github.io/ArcTale-Palette-Board/directories.md
+
+## Главное {#key-rules}
+
+::: card Основная директория {#main-folder}
+`Content/ArcProject/Art` — арт-ассеты. Папки верхнего уровня внутри `Art` создаются только по согласованию с лидом.
+:::
+
+::: half Shared + Theme {#shared-theme} | Правило
+Общая схема для любого раздела, в том числе будущего:
+
+- `Shared` Ассеты, которые используются в нескольких местах
+- `<Theme>` Ассеты конкретной локации, набора, стиля или объекта
+
+Ассет, который нужен только одной теме, лежит в ней, а не в `Shared`. Новый раздел строится по той же схеме. `Shared` в имя ассета не входит: `Vegetation/Shared/Fern` → `SKM_Vegetation_Fern_01`.
+:::
+
+::: half Из тестовой папки — в рабочую {#move-to-working} | Обязательно
+После апрува **все** ассеты переносятся из личной тестовой папки в `Content/ArcProject/Art`: по структуре ниже и с именами по [Naming Convention](#naming).
+
+После переноса тестовую папку нужно почистить. Как переносить — в разделе [Тестовая и рабочая папки](#directories/workflow).
+:::
+
+::: half Ассет лежит рядом с владельцем {#ownership}
+Уникальный материал персонажа — в папке персонажа. Общий для всех людей — в `Character/Human/Shared`. Общий для всего арта — в `Core`. Зависимости только вниз: объект берёт из `Core`, `Core` не зависит от объекта.
+:::
+
+::: half Своя папка — от двух мешей {#object-folder}
+Объект получает свою папку, только если в нём больше одного меша: `Prop/Depot/Generator` для корпуса и панели. Одиночный меш лежит прямо в папке темы: `Prop/Depot/SM_Prop_Depot_Lamp_01`.
+:::
+
+::: half Папка появляется вместе с контентом {#folder-with-content}
+Пустые папки заранее не создаются. Для простого пропа не нужны свои `Materials`, если у него нет материалов. Глубина — не более пяти уровней после `Art`.
+:::
+
+::: half Нет глобальных папок по типу {#no-type-folders}
+- (-) `Art/Meshes`, `Art/Textures`, `Art/Animations`
+
+Ассет теряет принадлежность, файлы одного объекта разбросаны по проекту.
+:::
+
+::: half Нет папок-статусов {#no-status-folders}
+- (-) `WIP`, `Review`, `Approved`, `Final`, `Old`, `Backup`, `Temp`, `New`
+
+Статус живёт в трекере, а не в пути. Перемещение между такими папками плодит редиректоры.
+:::
+
+::: half В Art только визуал {#visual-only}
+Блюпринты в `Art` только собирают или показывают визуальную часть объекта. Геймплейная логика хранится за пределами `Art`. Упаковка каналов в проекте одна — ORM.
+:::
+
+::: half Именование папок {#folder-naming}
+- PascalCase, латиница: `WallLamp`, `MetalFence`. Без пробелов, дефисов и подчёркиваний.
+- Смысловые папки — в единственном числе: `Frame`, `Floor`, `Socket`. Множественное ломается на `Glass`, `Foliage`, `Shelves`.
+- Имя ассета повторяет путь: `Train/Frame` → `SM_Train_Frame_01`. Префиксы и шаблоны — в [Naming Convention](#naming).
+:::
+
+::: half Массовые переносы {#mass-moves}
+Массовое перемещение и переименование — только по согласованию с лидом. После переноса проверить зависимости, карты и блюпринты, использующие ассеты, и запустить **Update Redirector References**.
+:::
+
+## Структура {#structure}
+
+```tree groups
+Content
+  ArcProject
+    Art
+      Core — общий тех-арт, ни от кого не зависит
+        Blueprints — визуальные блюпринты
+        Materials — мастер-материалы, функции, инстансы
+        Textures — маски, шумы, градиенты
+      Character — всё, что так или иначе персонажка
+        Human — люди
+          <Name> — ключевой персонаж
+          Other — второстепенные: Other/<Name>
+          Shared — общий риг, скелет, анимации людей
+        Creature — существа: Creature/<Name>
+          Shared
+      Environment
+        Shared — общее окружение: террейн, вода, небо
+          ConcreteModule — модульный набор
+        <Theme> — окружение конкретной локации
+      Vegetation — растительность
+        Shared — общая растительность
+          Fern — пример: папка растения
+            Assemblies — ассемблы и граф PVE
+              SM_Assembly_Fern_01
+              SKM_SM_Assembly_Fern_01
+              SK_SM_Assembly_Fern_01
+              PVE_Vegetation_Fern_01
+            Materials
+              MI_Vegetation_Fern_01
+            SKM_Vegetation_Fern_01
+            SKM_Vegetation_Fern_01_Skeleton
+            SKM_Vegetation_Fern_01_Physics
+        <Theme> — растительность конкретной локации
+      Prop — мелкие и средние объекты
+        Shared — общие пропсы
+        <Theme> — набор простых объектов по теме
+      Train
+        Base
+        Frame — фреймы и меш сокета: SM_Train_Frame_Socket_01
+        Sheathing — обшивка по стилям
+          Default — Cabin, Floor, Wall, Roof: SM_Sheathing_Default_Cabin_01
+          <Style> — стиль, если он тянет больше одного меша
+        Ram? — тараны
+        Module? — модули по подпапкам
+      Weapon? — оружие
+        Shared? — общие атачменты по классу: Attachment/Scope
+        <Name>?
+      Vehicle? — транспорт, как Train
+```
+
+::: half Character {#character}
+Всё, что так или иначе персонажка, лежит здесь, а не в корне: MetaHuman, скелетал меши, скелеты, анимации. Люди — в `Human/<Name>`, второстепенные — в `Human/Other`, общий риг людей — в `Human/Shared`. Существа от зверей до боссов — в `Creature/<Name>`.
+:::
+
+::: half Environment {#environment}
+Аутдоры, здания, модульные наборы. Общее окружение — в `Shared`, окружение конкретной локации — в её теме. Модульный набор — своя папка: `Shared/ConcreteModule`.
+:::
+
+::: half Vegetation {#vegetation}
+Каждое растение — своя папка: `Vegetation/Shared/<Name>` или `Vegetation/<Theme>/<Name>`.
+
+- В папке растения — меш, скелет и физика из PVE. Их имена задаёт PVE, см. [исключение](#naming/pve-exception).
+- `Materials` — материалы растения.
+- `Assemblies` — все ассемблы и граф `PVE_` (Procedural Vegetation Editor).
+
+Ассемблы не наследуют имя от пути: `SM_Assembly_<Name>_<Index>`.
+:::
+
+::: half Prop {#prop}
+Мелкие и средние объекты. Общие — в `Shared`, остальные — по теме, а не по геймплейной функции: разрушаемость и интерактивность решает блюпринт, не папка.
+:::
+
+::: half Train {#train}
+`Base` и `Frame` — основа. Обшивка — `Sheathing/<Style>`: пол, стены, кабины, крыши и декор-модули на стены, если стиль сдаётся паком. Стиль получает свою папку, только если тянет больше одного меша, иначе — в `Default`. Светильники и другие модули от стиля — в папке стиля. Меши стройки хаба вне поезда — в `Prop`.
+:::
+
+::: half Weapon {#weapon}
+Атачмент, общий для класса оружия, — в `Weapon/Shared/Attachment`. Уникальный для одной пушки — внутри её папки.
+:::
+
+> [!NOTE] Будущие папки
+> `Ram`, `Module`, `Weapon` и `Vehicle` пока не созданы — появятся вместе с контентом.
+
+## Типовые папки {#typed-folders}
+
+::: card Materials и Textures {#materials-textures}
+Типовые папки — `Materials`, `Textures` и `Blueprints`, для растительности ещё `Assemblies`. `Textures` лежит внутри `Materials`. Меши лежат прямо в папке объекта, папка `Meshes` не создаётся.
+
+- Типовые папки — во множественном числе, так они отличаются от смысловых.
+- В имя ассета типовые папки **не входят**, как и `Shared`. Все остальные папки — смысловые, в единственном числе, и в имя входят.
+- **Исключение — `Core`:** там `Textures` на одном уровне с `Materials`, потому что текстуры Core работают во внешних материалах, а не только в мастер-материалах Core.
+- **`Assemblies`** — типовая папка растительности, см. [Vegetation](#directories/vegetation).
+- **`Blueprints`** — визуальные блюпринты объекта или раздела, например `Core/Blueprints`.
+
+```tree
+Prop
+  Depot
+    Generator
+      Materials
+        Textures
+          T_Depot_Generator_Body_D_01
+          T_Depot_Generator_Body_ORM_01
+        MI_Depot_Generator_Body_01
+      SM_Depot_Generator_Body_01
+      SM_Depot_Generator_Panel_01
+```
+:::
+
+## Тестовая и рабочая папки {#workflow}
+
+::: card После апрува {#after-approval}
+- Пока ассет не прошёл апрув, он живёт в вашей личной тестовой папке.
+- После апрува **все** ассеты переносятся в рабочую папку внутри `Content/ArcProject/Art` по структуре выше и получают имена по [Naming Convention](#naming).
+- После переноса тестовую папку нужно почистить: копии, старые версии и неиспользуемые ассеты удаляются.
+
+> [!WARNING] Переносить только через Content Browser
+> Перемещайте ассеты в Content Browser, а не в проводнике, иначе сломаются ссылки. После переноса запустите на тестовой папке **Update Redirector References**.
+:::
+
+> [!IMPORTANT] Рабочие ассеты не ссылаются на тестовую папку
+> Перед чисткой убедитесь, что ничего в `Content/ArcProject` не использует ассеты из вашей тестовой папки. Окно удаления в Unreal показывает найденные ссылки.
+
+---
+
+# Naming Convention
+
+Страница: https://ilumetric.github.io/ArcTale-Palette-Board/#naming · исходник: https://ilumetric.github.io/ArcTale-Palette-Board/naming-convention.md
+
+## Общие принципы {#principles}
+
+::: card Имя повторяет путь {#name-from-path} | Правило двух папок
+Путь в контенте и имя ассета согласованы: имя собирается из **двух последних смысловых папок** пути и, если нужно, собственного имени объекта.
+
+`Art\Prop\Depot\Generator` → `SM_Depot_Generator_Body_01`
+
+`Art\Train\Frame` → `SM_Train_Frame_01`
+
+`Art\Vegetation\Shared\Fern` → `SKM_Vegetation_Fern_01`
+
+- Служебные папки не считаются: `Shared`, `Materials`, `Textures`, `Blueprints`, `Assemblies`.
+- **Core** — исключение: папки в имя не входят, `MM_Glass_01`.
+- **Ассемблы** растительности — исключение: `SM_Assembly_<Name>_<Index>`.
+- **Растительность из PVE** — исключение, см. [ниже](#naming/pve-exception).
+
+Структура папок — в [дереве на странице Directories](#directories/structure), правила именования папок — в [Directories](#directories/folder-naming).
+:::
+
+::: half Базовые правила {#base-rules}
+- Имя файла и путь в проекте выдаются вместе с ТЗ.
+- Разделитель только нижнее подчёркивание. Пробелы, тире и дефисы запрещены.
+- Индекс обязателен с первой версии: `_01`, `_02`, `_03`.
+:::
+
+::: half Зачем две папки в имени {#why-two-folders}
+Поиск в Content Browser идёт по имени ассета. Когда в имени есть префикс и папки, ассеты фильтруются сразу по типу и по месту: достаточно помнить, где лежит ассет, а не его точное имя.
+
+- `MI_Depot` Все инстансы материалов из темы `Depot`
+- `T_Depot_Generator` Все текстуры генератора
+- `SM_Depot` Все меши из темы `Depot`
+
+Одной папки мало: `Generator` может быть и в `Depot`, и в другой теме. Полный путь слишком длинный. Две папки однозначно указывают место и оставляют имя коротким.
+:::
+
+::: card Растительность из PVE {#pve-exception} | Исключение
+Имена ассетов, которые создаёт PVE, захардкожены в плагине. **Не переименовывать их вручную:** при следующем экспорте PVE не найдёт ассет и создаст дубль.
+
+- Имя задаётся только в ноде Export, в поле **Mesh Name**: `SKM_Vegetation_Fern_01`.
+- Скелет, физику и части ассемблов PVE называет сам: `SKM_Vegetation_Fern_01_Skeleton`, `SK_SM_Assembly_Fern_01`.
+:::
+
+## Префиксы {#prefixes}
+
+::: half Геометрия и физика {#mesh-prefixes}
+- `SM_` Static Mesh — `SM_Depot_Generator_Body_01`
+- `SKM_` Skeletal Mesh — `SKM_Human_Hero_01`
+- `PHYS_` Physics Asset — `PHYS_Human_Hero_01`
+- `PM_` Physical Material — `PM_Metal_01`
+:::
+
+::: half Материалы {#material-prefixes}
+- `MM_` Master Material — `MM_Glass_01`
+- `M_` Material — `M_Glass_01`
+- `MI_` Material Instance — `MI_Glass_Frosted_01`
+- `PPM_` Post Process Material — `PPM_Outline_01`
+:::
+
+::: half Текстуры и графы {#texture-prefixes}
+- `T_` Texture — `T_Depot_Generator_Body_D_01`
+- `HDR_` HDRI — `HDR_Overcast_01`
+- `PVE_` PVE Graph — `PVE_Vegetation_Fern_01`
+:::
+
+::: half Эффекты {#fx-prefixes}
+- `FXS_` Niagara System
+- `FXE_` Niagara Emitter
+- `FXF_` Niagara Function
+:::
+
+::: half Анимация {#anim-prefixes}
+- `SKEL_` Skeleton — `SKEL_Human_Hero_01`
+- `Rig_` Control Rig
+- `IK_` IK Rig — `IK_Human_Hero_01`
+- `RTG_` IK Retargeter
+- `AS_` Animation Sequence
+- `AM_` Animation Montage
+- `BS_` Blend Space
+- `ABP_` Animation Blueprint
+- `LS_` Level Sequence
+- `EDIT_` Sequencer Edits
+:::
+
+::: half Блюпринты и данные {#blueprint-prefixes}
+- `BP_` Blueprint
+- `AC_` Actor Component
+- `BI_` Blueprint Interface
+- `WBP_` Widget Blueprint
+- `DT_` Data Table
+- `CT_` Curve Table
+- `E_` Enum
+- `F_` Structure
+:::
+
+::: card Медиа и прочее {#other-prefixes}
+- `MS_` Media Source
+- `MO_` Media Output
+- `MP_` Media Player
+- `MPR_` Media Profile
+- `NDC_` nDisplay Configuration
+- `OCIO_` OCIO Profile
+- `SNAP_` Level Snapshots
+- `RCP_` Remote Control Preset
+:::
+
+## Шаблоны имён {#templates}
+
+::: card Static Mesh | SM_
+`SM_<DirectoryName>_<AssetName>_<Index>`
+
+Примеры
+
+- `SM_Depot_Generator_Body_01`
+- `SM_Train_Frame_01`
+:::
+
+::: card Texture | T_
+`T_<DirectoryName>_<AssetName>_<TextureType>_<Index>`
+
+Примеры
+
+- `T_Depot_Generator_Body_D_01`
+- `T_Depot_Generator_Body_ORM_01`
+- `T_Depot_Generator_Body_N_01`
+- `T_Depot_Generator_Body_M_01`
+
+> [!IMPORTANT]
+> Тип текстуры стоит перед индексом.
+:::
+
+::: card Типы текстур {#texture-types}
+- `D` Base Color
+- `ORM` AO / Roughness / Metallic
+- `N` Normal
+- `M`, `M1`, `M2` Mask
+:::
+
+---
+
+# Custom Primitive Data
+
+Страница: https://ilumetric.github.io/ArcTale-Palette-Board/#cpd · исходник: https://ilumetric.github.io/ArcTale-Palette-Board/custom-primitive-data.md
+
+## Индексы {#indexes}
+
+Индексы общие для всего проекта: один индекс — один параметр во всех материалах и блюпринтах.
+
+| Индекс | Параметр | Значение | Что делает |
+|---|---|---|---|
+| `0` | `PreviewMode` | `0`–`1` | Включает превью материала |
+| `1` | `Emissive` | `0`–`1` и выше | Включает эмиссив материала. Значение больше `1` умножает силу эмиссива |
+| `2` | `Seed` | любое | Сид для рандомизации |
+| `3` | `RotateSpeed` | любое | Скорость вращения для вращающихся частей, например `MM_Wheel_SwingArm` |
+
+## Как подключить {#setup}
+
+::: half В материале {#material}
+- Создайте **Scalar Parameter** с именем из таблицы.
+- В Details включите **Use Custom Primitive Data**.
+- В **Primitive Data Index** укажите индекс из таблицы.
+:::
+
+::: half В блюпринте {#blueprint}
+- В Details компонента меша найдите **Custom Primitive Data**, в массиве **Data** задайте элемент с индексом из таблицы. Если материал уже назначен, рядом с индексом видно имя параметра.
+- Из графа: нода **Set Custom Primitive Data Float**, в **Data Index** — индекс из таблицы.
+:::
+
+::: card Правила {#rules}
+- Индекс закреплён за параметром во всём проекте, под другое его не занимают. Значение задаётся на компоненте, и его читают все материалы этого меша.
+- Имя параметра в материале — точно как в таблице.
+- Новый параметр получает следующий свободный индекс и сначала добавляется в эту таблицу.
+- Vector Parameter занимает четыре индекса подряд: указанный и три следующих.
+:::

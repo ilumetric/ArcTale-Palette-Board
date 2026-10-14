@@ -1,0 +1,31 @@
+# ArcTale: Palette Board
+
+> Внутренние правила арт-контента проекта ArcTale (Unreal Engine): структура папок в `Content/ArcProject/Art`, именование ассетов (префиксы и шаблоны имён), индексы Custom Primitive Data. Плюс инструменты: палитра проекта и упаковщик каналов текстур.
+
+Все правила одним файлом: [llms-full.txt](https://ilumetric.github.io/ArcTale-Palette-Board/llms-full.txt). Читайте его, если нужен полный контекст, — обходить страницы сайта не нужно: сайт рендерит те же Markdown-файлы через JavaScript.
+
+Главное в двух строках:
+
+- Арт лежит в `Content/ArcProject/Art/<Раздел>/Shared|<Theme>/...`, папки PascalCase в единственном числе; типовые папки (`Materials`, `Textures`, `Blueprints`, `Assemblies`) — во множественном.
+- Имя ассета = префикс + две последние смысловые папки пути + имя + индекс: `Art/Prop/Depot/Generator` → `SM_Depot_Generator_Body_01`. Разделитель только `_`, индекс с `_01`.
+
+## Правила
+
+- [Directories](https://ilumetric.github.io/ArcTale-Palette-Board/directories.md): где лежит ассет — дерево папок, Shared + Theme, тестовая и рабочая папки, перенос после апрува
+- [Naming Convention](https://ilumetric.github.io/ArcTale-Palette-Board/naming-convention.md): как называется ассет — правило двух папок, все префиксы (`SM_`, `T_`, `MI_`, `BP_`…), шаблоны имён, типы текстур, исключения для Core и PVE
+- [Custom Primitive Data](https://ilumetric.github.io/ArcTale-Palette-Board/custom-primitive-data.md): общая для проекта таблица индексов CPD и как подключить параметр в материале и блюпринте
+
+## Формат файлов
+
+Файлы — Markdown с расширениями сайта:
+
+- `## Заголовок {#id}` — якорь. На сайте открывается как `#<страница>/<id>`, например `https://ilumetric.github.io/ArcTale-Palette-Board/#naming/pve-exception`. Страницы: `directories`, `naming`, `cpd`.
+- `::: card Заголовок {#id} | Метка` … `:::` и `::: half …` — карточка с правилом; `| Метка` — бейдж вроде «Правило» или «Исключение».
+- ```` ```tree ```` — дерево папок, вложенность отступом в два пробела; `— текст` после имени — пояснение, `?` в конце — папка ещё не создана.
+- `> [!NOTE]`, `> [!IMPORTANT]`, `> [!WARNING]` — выноски; `- (-) …` — запрещённый вариант.
+
+## Optional
+
+- [Палитра проекта](https://ilumetric.github.io/ArcTale-Palette-Board/palette-board.json): JSON с HEX-цветами по группам `base`, `extra`, `accent`, `neon`
+- [Сайт](https://ilumetric.github.io/ArcTale-Palette-Board/): интерактивная версия с палитрой и Channel Packer (упаковка ORM и масок в каналы RGBA)
+- [Исходники](https://github.com/ilumetric/ArcTale-Palette-Board)

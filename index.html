@@ -1684,6 +1684,7 @@
       }
 
       .sidebar-footer {
+        display: flex;
         margin: 0;
         padding: 0;
         border: 0
@@ -2331,6 +2332,10 @@
       <a href="https://github.com/ilumetric/ArcTale-Palette-Board" target="_blank" rel="noopener" aria-label="Репозиторий на GitHub">
         <svg class="icon"><use href="#i-github" /></svg>
         <span class="footer-label">GitHub</span>
+      </a>
+      <a href="llms-full.txt" id="copyLlmsLink" aria-label="Скопировать ссылку для нейросетей">
+        <svg class="icon"><use href="#i-link" /></svg>
+        <span class="footer-label">Ссылка для ИИ</span>
       </a>
     </div>
   </aside>
@@ -3016,6 +3021,12 @@ Prop
       // В свёрнутом виде подписи скрыты, поэтому показываем их во всплывающей подсказке
       sideLinks.forEach(a => { if (collapsed) a.title = a.getAttribute('aria-label'); else a.removeAttribute('title'); });
     }
+    // Ссылка на все правила одним файлом (llms-full.txt), чтобы дать её нейросети.
+    $('#copyLlmsLink').addEventListener('click', async e => {
+      e.preventDefault();
+      try { await navigator.clipboard.writeText('https://ilumetric.github.io/ArcTale-Palette-Board/llms-full.txt'); showToast('Ссылка на правила для нейросетей скопирована'); }
+      catch (_) { showToast('Не удалось скопировать'); }
+    });
     function toggleSidebar() {
       const collapsed = !document.body.classList.contains('sidebar-collapsed');
       applySidebar(collapsed);

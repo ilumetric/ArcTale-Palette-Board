@@ -1,6 +1,6 @@
 # ArcTale: Palette Board
 
-> Внутренние правила арт-контента проекта ArcTale (Unreal Engine): структура папок в `Content/ArcProject/Art`, именование ассетов (префиксы и шаблоны имён), индексы Custom Primitive Data. Плюс инструменты: палитра проекта и упаковщик каналов текстур.
+> Внутренние правила арт-контента проекта ArcTale (Unreal Engine): структура папок в `Content/ArcProject/Art`, именование ассетов (префиксы и шаблоны имён), индексы Custom Primitive Data, правила Nanite. Плюс инструменты: палитра проекта и упаковщик каналов текстур.
 
 Все правила одним файлом: [llms-full.txt](https://ilumetric.github.io/ArcTale-Palette-Board/llms-full.txt). Читайте его, если нужен полный контекст, — обходить страницы сайта не нужно: сайт рендерит те же Markdown-файлы через JavaScript.
 
@@ -14,13 +14,15 @@
 - [Directories](https://ilumetric.github.io/ArcTale-Palette-Board/directories.md): где лежит ассет — дерево папок, Shared + Theme, тестовая и рабочая папки, перенос после апрува
 - [Naming Convention](https://ilumetric.github.io/ArcTale-Palette-Board/naming-convention.md): как называется ассет — правило двух папок, все префиксы (`SM_`, `T_`, `MI_`, `BP_`…), шаблоны имён, типы текстур, исключения для Core и PVE
 - [Custom Primitive Data](https://ilumetric.github.io/ArcTale-Palette-Board/custom-primitive-data.md): общая для проекта таблица индексов CPD и как подключить параметр в материале и блюпринте
+- [Nanite](https://ilumetric.github.io/ArcTale-Palette-Board/nanite.md): что идёт в Nanite (всегда / возможно / точно нет), нормали и hard edges, топология и UV, китбаш и зазоры, материалы и шейдеры, данные меша, Static Displacement, коллизия
 
 ## Формат файлов
 
 Файлы — Markdown с расширениями сайта:
 
-- `## Заголовок {#id}` — якорь. На сайте открывается как `#<страница>/<id>`, например `https://ilumetric.github.io/ArcTale-Palette-Board/#naming/pve-exception`. Страницы: `directories`, `naming`, `cpd`.
-- `::: card Заголовок {#id} | Метка` … `:::` и `::: half …` — карточка с правилом; `| Метка` — бейдж вроде «Правило» или «Исключение».
+- `## Заголовок {#id}` — якорь. На сайте открывается как `#<страница>/<id>`, например `https://ilumetric.github.io/ArcTale-Palette-Board/#naming/pve-exception`. Страницы: `directories`, `naming`, `cpd`, `nanite`.
+- `::: card Заголовок {#id} | Метка` … `:::`, `::: half …`, `::: third …`, `::: step …` — карточка с правилом (во всю ширину, в две и три колонки, цепочкой); `| Метка` — метка: «Запрет», «Правило», «Внимание», «Заметка», «Проверка», «Совет», «Основной способ» задают тип правила, остальные (например «Исключение») — просто бейдж.
+- `::: yes` / `::: maybe` / `::: no` … `:::` — вердикт на странице Nanite: всегда Nanite / возможно / точно нет.
 - ```` ```tree ```` — дерево папок, вложенность отступом в два пробела; `— текст` после имени — пояснение, `?` в конце — папка ещё не создана.
 - `> [!NOTE]`, `> [!IMPORTANT]`, `> [!WARNING]` — выноски; `- (-) …` — запрещённый вариант.
 

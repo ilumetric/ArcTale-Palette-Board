@@ -959,24 +959,73 @@
     .md-content .card {
       position: relative;
       scroll-margin-top: 24px;
-      margin: 0 0 16px;
-      padding: 22px 24px;
+      margin: 0 0 12px;
+      padding: 14px 18px;
       border: 1px solid var(--stroke);
-      border-radius: 20px;
+      border-radius: 14px;
       background: var(--surface)
     }
 
     .md-content .card h3 {
-      margin: 0 0 12px;
+      margin: 0 0 6px;
       padding-right: 28px;
-      font-size: 17px
+      font-size: 15px
+    }
+
+    .md-content .card-body {
+      font-size: 14px;
+      line-height: 1.65
+    }
+
+    .md-content .card-body p,
+    .md-content .card-body ul {
+      margin-bottom: 8px
+    }
+
+    /* Тон карточки по метке: иконка у заголовка и подсвеченная рамка */
+    .md-content .card[data-tone] {
+      border-color: color-mix(in srgb, var(--tone) 40%, transparent);
+      background: color-mix(in srgb, var(--tone) 4%, var(--surface))
+    }
+
+    .tone-no {
+      --tone: #f87171
+    }
+
+    .tone-rule {
+      --tone: #60a5fa
+    }
+
+    .tone-warn {
+      --tone: #f59e0b
+    }
+
+    .tone-check {
+      --tone: #a78bfa
+    }
+
+    .tone-tip,
+    .tone-best {
+      --tone: #4ade80
+    }
+
+    .md-content .card[data-tone] h3 {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start
+    }
+
+    .tone-icon {
+      display: inline-flex;
+      margin-top: 3px;
+      color: var(--tone)
     }
 
     /* Копирование ссылки на карточку */
     .card-link {
       position: absolute;
-      top: 14px;
-      right: 14px;
+      top: 8px;
+      right: 8px;
       display: grid;
       place-items: center;
       width: 28px;
@@ -1000,17 +1049,17 @@
       color: var(--text)
     }
 
-    .card-body> :last-child {
+    .md-content .card-body> :last-child {
       margin-bottom: 0
     }
 
     .md-content .card hr {
-      margin: 18px 0
+      margin: 12px 0
     }
 
     .badge {
       display: inline-block;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       padding: 3px 10px;
       border-radius: 999px;
       background: rgba(74, 222, 128, .12);
@@ -1162,12 +1211,27 @@
     .md-content .cols {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-      margin: 0 0 16px
+      gap: 12px;
+      margin: 0 0 12px
     }
 
     .md-content .cols .card {
       margin: 0
+    }
+
+    .md-content .cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr))
+    }
+
+    /* Последняя карточка неполного ряда тянется на свободные слоты */
+    @media (min-width: 641px) {
+      .md-content .cols-3> :last-child:nth-child(3n+1) {
+        grid-column: span 3
+      }
+
+      .md-content .cols-3> :last-child:nth-child(3n+2) {
+        grid-column: span 2
+      }
     }
 
     /* В узкой карточке пример уходит под описание */
@@ -1186,6 +1250,102 @@
     @media (max-width: 640px) {
       .md-content .cols {
         grid-template-columns: minmax(0, 1fr)
+      }
+    }
+
+    /* Цепочка карточек, связанных линией: ::: step */
+    .md-content .flow {
+      display: grid;
+      gap: 20px;
+      margin: 0 0 12px
+    }
+
+    .md-content .flow .card {
+      margin: 0
+    }
+
+    .md-content .flow .card+.card::before {
+      content: "";
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      width: 2px;
+      height: 20px;
+      margin-left: -1px;
+      background: var(--stroke-strong)
+    }
+
+    /* Доска вердиктов: три столбца — да, возможно, нет */
+    .md-content .verdicts {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      align-items: start;
+      margin: 0 0 12px
+    }
+
+    .verdict-yes {
+      --v: #4ade80
+    }
+
+    .verdict-maybe {
+      --v: #facc15
+    }
+
+    .verdict-no {
+      --v: #f87171
+    }
+
+    .verdict-col {
+      position: relative;
+      display: grid;
+      gap: 8px
+    }
+
+    /* Линия от шапки столбца через все его карточки */
+    .verdict-col::before {
+      content: "";
+      position: absolute;
+      top: 20px;
+      bottom: 40px;
+      left: 50%;
+      width: 2px;
+      margin-left: -1px;
+      background: color-mix(in srgb, var(--v) 35%, transparent)
+    }
+
+    .verdict-head {
+      position: relative;
+      margin-bottom: 8px;
+      padding: 8px 12px;
+      border: 1px solid color-mix(in srgb, var(--v) 45%, transparent);
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--v) 14%, var(--bg));
+      color: var(--v);
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center
+    }
+
+    .md-content .verdicts .card {
+      margin: 0;
+      padding: 12px 14px;
+      border-color: color-mix(in srgb, var(--v) 28%, transparent);
+      background: color-mix(in srgb, var(--v) 5%, var(--surface))
+    }
+
+    .md-content .verdicts .card h3 {
+      font-size: 14px
+    }
+
+    .md-content .verdicts .card-body {
+      font-size: 13px
+    }
+
+    @media (max-width: 640px) {
+      .md-content .verdicts {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 28px
       }
     }
 
@@ -1320,7 +1480,7 @@
     }
 
     .card-body .callout {
-      margin-top: 18px
+      margin-top: 12px
     }
 
     .callout>.icon {
@@ -2275,6 +2435,12 @@
     <symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></symbol>
     <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></symbol>
     <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4" /></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" /><path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" /></symbol>
+    <symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path d="M7 12h10" /></symbol>
+    <symbol id="i-feather" viewBox="0 0 24 24"><path d="M12.67 19a2 2 0 0 0 1.416-.588l6.154-6.172a6 6 0 0 0-8.49-8.49L5.586 9.914A2 2 0 0 0 5 11.328V18a1 1 0 0 0 1 1z" /><path d="M16 8 2 22" /><path d="M17.5 15H9" /></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" /><path d="M9 18h6" /><path d="M10 22h4" /></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" /></symbol>
     <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" /></symbol>
     <symbol id="i-github" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" /><path d="M9 18c-4.51 2-5-2-7-2" /></symbol>
     <symbol id="i-swap" viewBox="0 0 24 24"><path d="M8 3 4 7l4 4" /><path d="M4 7h16" /><path d="m16 21 4-4-4-4" /><path d="M20 17H4" /></symbol>
@@ -2317,6 +2483,10 @@
         <li><a href="#cpd" data-page="cpd">
             <svg class="icon"><use href="#i-sliders" /></svg>
             <span class="nav-label">Custom Primitive Data</span><span class="nav-label-short">CPD</span>
+          </a></li>
+        <li><a href="#nanite" data-page="nanite">
+            <svg class="icon"><use href="#i-box" /></svg>
+            <span class="nav-label">Nanite</span><span class="nav-label-short">Nanite</span>
           </a></li>
         <li><a href="#palette" data-page="palette">
             <svg class="icon"><use href="#i-palette" /></svg>
@@ -2449,6 +2619,27 @@
           <nav class="toc" aria-label="На этой странице">
             <p class="toc-title">На этой странице</p>
             <ul id="toc-cpd"></ul>
+          </nav>
+        </div>
+      </div>
+    </section>
+
+    <!-- Page: Nanite -->
+    <section id="page-nanite" class="page page--doc" aria-labelledby="nanite-title">
+      <header class="page-header">
+        <div class="container">
+          <h1 id="nanite-title">Nanite</h1>
+          <p>Правила работы с Nanite.</p>
+        </div>
+      </header>
+      <div class="page-body">
+        <div class="container doc-layout">
+          <article id="md-nanite" class="md-content">
+            <p class="md-loading">Загрузка…</p>
+          </article>
+          <nav class="toc" aria-label="На этой странице">
+            <p class="toc-title">На этой странице</p>
+            <ul id="toc-nanite"></ul>
           </nav>
         </div>
       </div>
@@ -2690,6 +2881,237 @@
 - Имя параметра в материале — точно как в таблице.
 - Новый параметр получает следующий свободный индекс и сначала добавляется в эту таблицу.
 - Vector Parameter занимает четыре индекса подряд: указанный и три следующих.
+:::
+  </script>
+  <script id="md-fallback-nanite" type="text/markdown">
+::: step Nanite — наш базовый рендер-путь для всей статичной геометрии {#base-path}
+Не-Nanite ассеты возможны, но это исключение.
+:::
+
+::: step Полигонаж всё ещё имеет значение {#polycount}
+Да, сегодня мы можем позволить себе в разы больше полигонов, но тяжёлые high-poly меши занимают больше места на диске и создают большую нагрузку на стриминг геометрии.
+:::
+
+## Что идёт в Nanite {#verdicts}
+
+::: yes Статик-меши {#static-mesh}
+Пропсы, архитектура, скалы, сканы.
+:::
+
+::: yes Модульные стены и панели {#modular}
+В том числе через PCG и ISM/HISM.
+:::
+
+::: yes Spline-меши {#spline-mesh}
+Дороги, трубы, провода.
+:::
+
+::: yes Ландшафт и растительность {#terrain}
+**Mesh Terrain** и **Nanite Foliage**.
+:::
+
+::: yes Geometry Collections {#geometry-collections}
+Разрушаемость.
+:::
+
+::: yes Debris {#debris}
+Вокселями.
+:::
+
+::: yes Мелкие пропсы {#small-props}
+100–300 треугольников: гайки, гильзы. Выигрыша нет, но и вреда нет — включаем ради единого пути.
+:::
+
+::: maybe Скелетные меши {#skeletal-mesh}
+Персонажи, техника со скелетной анимацией. Поддерживается с UE 5.5, но это отдельный пайплайн.
+
+Скорее всего для персонажей не будем использовать, а вот для больших големов (если такие будут) рассмотрим отдельно.
+:::
+
+::: no Прозрачное {#translucent}
+Стекло, вода, дым, decals-меши, любой Translucent, Masked.
+
+> [!TIP] Замена стеклу
+> У нас есть фейковое стекло — `MM_GlassFake`, оно не имеет прозрачности.
+:::
+
+::: no Morph targets {#morph-targets}
+И блендшейпы: не поддерживаются.
+:::
+
+::: no Forward Rendering, VR, MSAA {#forward}
+Всё, что рендерится этими путями.
+:::
+
+## Нормали {#normals}
+
+::: third Плотный меш без сглаживания {#faceted-normals} | Запрет
+Нельзя импортировать плотный меш с фасетными (несглаженными) нормалями. Каждый hard edge = разрыв вершин.
+:::
+
+::: third Вершин меньше, чем треугольников {#vertex-ratio} | Правило
+2:1 — уже проблема, 3:1 — меш полностью фасетный: медленный путь рендера и вес в разы больше.
+:::
+
+::: third Auto Smooth by angle {#auto-smooth} | Проверка
+С низким порогом превращает плотный меш в фасеты.
+:::
+
+::: half Где hard edges допустимы {#smoothing-groups} | Правило
+Sharp edges и Auto Smooth — осознанно, только на hard-surface. Органика, сканы, скульпты — всё Smooth.
+
+- Средние пропсы и крупные ассеты — фаски вместо жёстких углов.
+- Мелкие ассеты и детали — split normals.
+:::
+
+::: half Почему hard edges дорогие {#split-normals} | Внимание
+Unreal хранит split normals как разрыв вершин: на hard edge одна вершина становится несколькими. Вершин в Unreal больше, чем в DCC, и Nanite хуже упрощает такой меш.
+:::
+
+::: card Пример {#example}
+![Ворота: слева рендер, справа визуализация треугольников Nanite](images/nanite-smooth-normals.webp)
+
+Слева нормали не сглажены, справа сглажены. По итогу Nanite не может упростить геометрию слева, так как воспринимает каждый треугольник как подмеш.
+:::
+
+## Топология и UV {#topology}
+
+::: third Замкнутая геометрия {#manifold} | Совет
+Дыр, внутренних граней и non-manifold рёбер — минимум. Но не критично.
+:::
+
+::: third Длинные треугольники {#long-triangles} | Запрет
+Избегать: Nanite разобьёт их сам, но в этих местах возможны проблемы.
+:::
+
+::: third Тонкие детали {#thin-details} | Проверка
+Провода, прутья, сетки деформируются при упрощении. Смотреть на дистанции.
+:::
+
+::: third Лупы на больших поверхностях {#culling-loops} | Правило
+Дорезать: локальные участки Nanite лучше отсекает и упрощает.
+:::
+
+::: third Крупные UV-острова {#uv-islands} | Правило
+UV-острова крупнее, швов меньше. Каждый шов = дублирование вершин. Но не ценой растяжений развёртки и потери тексельной плотности.
+:::
+
+::: third Lightmap UV {#no-lightmap-uv} | Запрет
+Снять **Generate Lightmap UVs** при импорте: Lightmass не используем, лишний канал — данные и время билда.
+:::
+
+## Китбаш {#kitbash}
+
+::: third Китбаш разрешён {#kitbash-allowed} | Правило
+Глубоко утопленная геометрия отсекается почти бесплатно.
+:::
+
+::: third Но не вплотную {#overlap} | Запрет
+Панель в 1–5 см над стеной, накладка «в ноль»: издалека зазор меньше пикселя, и Nanite рисует оба слоя — overdraw.
+:::
+
+::: third Правило зазора {#gap-rule} | Правило
+Либо утопить глубоко (больше 10–20 см внутрь), либо интегрировать в один меш. В первую очередь — для крупных накладок, которые видны издалека.
+:::
+
+## Материалы {#materials}
+
+::: third Opaque и Masked {#opaque-masked} | Правило
+Других Blend Mode нет. Masked — в очень редких случаях.
+:::
+
+::: third Translucent, Additive, Modulate {#translucent-materials} | Запрет
+Заменятся на дефолтный материал с warning в логе. Стекло, вода, дымка — отдельный не-Nanite меш.
+:::
+
+::: third Меш-декали {#mesh-decals} | Запрет
+Не используем: они почти всегда Translucent.
+:::
+
+::: third Virtual Texture {#virtual-texture} | Совет
+Для текстур от 2K по одной из сторон.
+:::
+
+::: third Vertex Interpolator и Custom UV {#vertex-interpolator} | Внимание
+Работают, но считаются 3 раза на пиксель.
+:::
+
+::: third WPO {#no-wpo} | Запрет
+World Position Offset на Nanite-мешах не используем.
+:::
+
+## Данные меша {#mesh-data}
+
+::: third Vertex Color {#vertex-color} | Внимание
+Поддерживается, как и несколько UV. Но VC плывут при перестройке кластеров, а лишние UV — память на больших мешах.
+:::
+
+::: third VC общий для инстансов {#vertex-color-instances} | Правило
+Красить отдельный экземпляр через Vertex Paint нельзя. Вариации — Mesh Texture Paint, PerInstanceCustomData или материал.
+:::
+
+::: third Тангенты {#tangents} | Внимание
+Не хранятся, выводятся в пиксельном шейдере. На UV-швах с жёсткими нормалями возможны артефакты. Хранение можно включить, но ассет станет тяжелее на порядок.
+:::
+
+::: card Position Precision {#position-precision} | Правило
+**Auto**. Менять, только если скажет техартист: на огромных мешах и микродеталях геометрия может «дрожать».
+:::
+
+## Displacement {#displacement}
+
+::: card Static Displacement вместо POM {#static-displacement} | Основной способ
+POM не используем. Сколы и повреждения на бетоне, кирпиче, панелях делаем реальной геометрией или Static Displacement. Смещение запекается при билде Nanite, на выходе обычный плотный Nanite-меш, на рантайме ничего не стоит.
+
+**Static Mesh Editor → Nanite Settings:** Displacement UV Channel → Displacement Maps (элемент = слот материала, пустой = слот без смещения) → Magnitude, Center → Trim Relative Error → Apply.
+:::
+
+::: third Trim Relative Error = 0 {#trim-zero} | Запрет
+При `0` карты молча игнорируются, displacement не запекается. Trim одновременно включает displacement и задаёт плотность тесселяции.
+:::
+
+::: third Trim зависит от размера меша {#trim-size} | Заметка
+Допуск считается от площади меша, поэтому одно число на всё не работает. При `0.04`: панель 1×1 м ≈ 0.6 мм, стена 4×3 м ≈ 2 мм, фасад 20×10 м ≈ 8 мм. Целимся в 1–2 мм: модули до ~4 м — `0.04`, крупные — `0.02`, мелкие — `0.1`. Плотность сверять в Output Log: `Adaptive tessellate … tris`.
+:::
+
+::: third Trim упрощает весь меш {#trim-simplifies} | Заметка
+Trim не только задаёт плотность рельефа, но и обрезает всю детализацию меша мельче допуска, во всех слотах, даже без displacement. Фаски, пазы и швы мельче допуска сгладятся. Если в меше есть очень мелкая важная деталь, подбирай Trim по ней или выноси рельеф в отдельный меш.
+:::
+
+::: third Magnitude и Center {#magnitude-center} | Заметка
+Смещение = (height − Center) × Magnitude, в см, вдоль нормали вершины. Magnitude — реальная глубина рельефа. Center по умолчанию `0`, то есть всё выдавливается наружу. Для сколов и вмятин (белое = поверхность) нужен `1`, для карты со средним серым — `0.5`.
+:::
+
+::: third Height map {#height-map} | Заметка
+Важна битность исходника: 16-битный PNG или EXR. 8 бит дают ступени на пологих сколах. Настройка сжатия текстуры не влияет: билд читает исходник. Отдельная grayscale-текстура. Если всё же RGBA8, берётся канал R.
+:::
+
+::: third Normal map {#displacement-normal} | Заметка
+Нужен: displacement не пересчитывает нормали, новые вершины получают интерполированную исходную. Без normal map рельеф читается только силуэтом и тенями.
+:::
+
+::: third Рельеф на жёстких рёбрах и UV-швах {#displacement-seams} | Запрет
+Щелей не будет, смещения совпадающих вершин усредняются. Но на жёстком ребре угол уезжает по средней нормали, а на шве получается среднее двух выборок. Рельеф держать вне углов и швов.
+:::
+
+::: third Цена {#displacement-cost} | Заметка
+Каждый вариант повреждений — отдельный плотный ассет: диск и время билда. Через Material Instance разнообразие не сделать, нужны варианты меша.
+:::
+
+### Runtime-тесселяция (материал) {#runtime-tessellation}
+
+::: half Magnitude без запаса {#magnitude} | Запрет
+Не ставить `100`, чтобы потом скейлить в шейдере: **Displacement Scaling → Magnitude** в материале расширяет баунды примитива и инстансов. Большие значения ломают куллинг, особенно в тенях. Ставить реальную максимальную глубину.
+:::
+
+::: half Height map для материала {#material-height-map} | Заметка
+BC4 (**Texture Compression: Alpha**) или без сжатия. Не паковать в канал с нормалью.
+:::
+
+## Коллизия {#collision}
+
+::: card Без Complex Collision {#no-complex-collision} | Запрет
+На плотных мешах только UCX-боксы или Convex. «Use complex as simple» возьмёт фолбэк-меш Nanite: он проще оригинала, но для коллизии всё ещё дорогой.
 :::
   </script>
   <script id="md-fallback-directories" type="text/markdown">
@@ -2979,6 +3401,7 @@ Prop
       naming: { el: $('#page-naming'), title: 'Naming Convention' },
       directories: { el: $('#page-directories'), title: 'Directories' },
       cpd: { el: $('#page-cpd'), title: 'Custom Primitive Data' },
+      nanite: { el: $('#page-nanite'), title: 'Nanite' },
       packer: { el: $('#page-packer'), title: 'Channel Packer' },
     };
     let currentPage = null;
@@ -3521,7 +3944,7 @@ Prop
 
     /* ═══ Markdown loader (doc pages) ═══ */
     (function () {
-      const DOCS = { naming: 'naming-convention.md', directories: 'directories.md', cpd: 'custom-primitive-data.md' };
+      const DOCS = { naming: 'naming-convention.md', directories: 'directories.md', cpd: 'custom-primitive-data.md', nanite: 'nanite.md' };
       Object.entries(DOCS).forEach(([page, file]) => loadDoc(page, file));
 
       function loadDoc(page, file) {
@@ -3563,10 +3986,25 @@ Prop
       // Таблицы с горизонтальным скроллом, id у заголовков, оглавление, ссылки на карточки.
       // Явный якорь пишется в конце заголовка: «## Префиксы {#prefixes}».
       function enhance(page, container, toc) {
-        container.querySelectorAll('.card-half').forEach(c => {
-          if (c.previousElementSibling?.classList.contains('cols')) { c.previousElementSibling.appendChild(c); return; }
-          const grid = el('div', 'cols');
+        container.querySelectorAll('.card-half, .card-third, .card-step, .card-verdict').forEach(c => {
+          const cls = c.classList.contains('card-half') ? 'cols' : c.classList.contains('card-third') ? 'cols cols-3' :
+            c.classList.contains('card-step') ? 'flow' : 'verdicts';
+          if (c.previousElementSibling?.className === cls) { c.previousElementSibling.appendChild(c); return; }
+          const grid = el('div', cls);
           c.replaceWith(grid); grid.appendChild(c);
+        });
+        // Доска вердиктов раскладывает карточки по столбцам, у каждого своя шапка.
+        container.querySelectorAll('.verdicts').forEach(board => {
+          const cards = [...board.children];
+          Object.entries(VERDICTS).forEach(([k, title]) => {
+            const own = cards.filter(c => c.classList.contains('verdict-' + k));
+            if (!own.length) return;
+            const col = el('div', 'verdict-col verdict-' + k);
+            const head = el('div', 'verdict-head');
+            head.textContent = title;
+            col.append(head, ...own);
+            board.appendChild(col);
+          });
         });
         container.querySelectorAll('table').forEach(t => {
           const wrap = el('div', 'table-wrap');
@@ -3686,12 +4124,29 @@ Prop
             '<a href="' + href + '"' + (href[0] === '#' ? '' : ' target="_blank" rel="noopener"') + '>' + text + '</a>');
       }
 
-      // card — карточка во всю ширину, half — в полширины; соседние half собираются в две колонки.
+      // Заголовки столбцов доски вердиктов.
+      const VERDICTS = { yes: 'Всегда Nanite', maybe: 'Возможно', no: 'Точно нет' };
+      // Метки с тоном рисуются иконкой у заголовка и цветной рамкой, остальные — бейджем.
+      const TONES = {
+        'Запрет': ['no', 'ban'], 'Правило': ['rule', 'feather'], 'Обязательно': ['rule', 'feather'], 'Заметка': ['rule', 'feather'],
+        'Внимание': ['warn', 'alert'], 'Проверка': ['check', 'search'], 'Совет': ['tip', 'bulb'], 'Основной способ': ['best', 'star'],
+      };
+
+      // card — карточка во всю ширину, half — в полширины; соседние half собираются в две колонки, third — в три.
+      // step — соседние step связываются линией в цепочку.
+      // yes / maybe / no — вердикт; соседние вердикты собираются в доску из трёх столбцов.
       function renderContainer(type, arg, body) {
-        if (type !== 'card' && type !== 'half') return parseBlocks(body);
+        const verdict = VERDICTS[type];
+        if (!['card', 'half', 'third', 'step'].includes(type) && !verdict) return parseBlocks(body);
         const [title, badge] = arg.split('|').map(x => x.trim());
-        const b = badge ? '<span class="badge' + (/^[A-Z]+_$/.test(badge) ? ' badge-code' : '') + '">' + badge + '</span>' : '';
-        return '<section class="card' + (type === 'half' ? ' card-half' : '') + '">' + b + (title ? '<h3>' + inline(title) + '</h3>' : '') +
+        const tone = TONES[badge];
+        const b = badge && !tone ? '<span class="badge' + (/^[A-Z]+_$/.test(badge) ? ' badge-code' : '') + '">' + badge + '</span>' : '';
+        // Иконка без текста внутри, чтобы заголовок в оглавлении остался чистым.
+        const icon = tone ? '<span class="tone-icon" role="img" aria-label="' + badge + '" title="' + badge + '">' +
+          ICON(tone[1]) + '</span>' : '';
+        const cls = (verdict ? ' card-verdict verdict-' + type : type !== 'card' ? ' card-' + type : '') + (tone ? ' tone-' + tone[0] : '');
+        return '<section class="card' + cls + '"' + (tone ? ' data-tone' : '') + '>' + b +
+          (title ? '<h3>' + icon + inline(title) + '</h3>' : '') +
           '<div class="card-body">' + parseBlocks(body) + '</div></section>';
       }
 
